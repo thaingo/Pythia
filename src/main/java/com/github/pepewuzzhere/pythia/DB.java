@@ -1,0 +1,113 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2012 Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package com.github.pepewuzzhere.pythia;
+
+import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
+/**
+ * Singleton represents Pythia database instance. Has keyspaces map and it is
+ * root of data model tree.
+ *
+ * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
+ * @version %I%, %G%
+ * @since 1.0
+ */
+public enum DB {
+
+    /**
+     * Instance of pythia database - entry to root of pythia data model.
+     */
+    INSTANCE;
+
+    /**
+     * Keyspaces list
+     */
+    public final Map<String, IKeySpace> keySpaces = new HashMap<>();
+
+    /**
+     * Stack with keyspaces to delete
+     */
+    public final Stack<String> keyspaceToDelete = new Stack<>();
+
+    /**
+     * List of column families to delete
+     */
+    public final Map<String, Stack<String>> columnFamilyToDelete =
+            new HashMap<>();
+
+    /**
+     * Adds new keyspace with unique name or throws exception.
+     *
+     * @param keySpace KeySpace to add
+     * @throws PythiaException
+     */
+    public synchronized void addKeySpace(IKeySpace keySpace)
+            throws PythiaException
+    {
+        if (keySpaces.containsKey(keySpace.getName())) {
+            throw new PythiaException(PythiaError.KEY_ALREADY_EXISTS);
+        } else {
+            keySpaces.put(keySpace.getName(), keySpace);
+        }
+    }
+
+    /**
+     * Gets keyspace by name.
+     *
+     * @param name Name of keyspace
+     * @return Keyspace with provided name or null
+     */
+    public synchronized IKeySpace getKeySpace(String name) {
+        return keySpaces.get(name);
+    }
+
+    /**
+     * Drop keyspace with providen name. Throws exception if keyspace don't
+     * exists.
+     *
+     * @param name Name of keyspace
+     * @throws PythiaException
+     */
+    public synchronized void dropKeySpace(String name) throws PythiaException {
+        if (keySpaces.containsKey(name)) {
+            keySpaces.remove(name);
+            keyspaceToDelete.push(name);
+        } else {
+            throw new PythiaException(PythiaError.DATA_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Clears all keyspaces - used only for testing purposes.
+     */
+    public synchronized void dropDB() {
+        keySpaces.clear();
+        keyspaceToDelete.clear();
+        columnFamilyToDelete.clear();
+    }
+
+}
