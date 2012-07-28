@@ -24,7 +24,7 @@
 package com.github.pepewuzzhere.pythia;
 
 /**
- * Standard codes for PythiaException
+ * Standard error codes for PythiaException
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%

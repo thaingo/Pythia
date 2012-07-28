@@ -24,7 +24,9 @@
 package com.github.pepewuzzhere.pythia;
 
 /**
- * Exception class used in Pythia. Could be used with provided error codes.
+ * Exception class used in Pythia.
+ *
+ * Could be used with provided error codes {@link PythiaError}.
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
@@ -37,18 +39,18 @@ public class PythiaException extends Exception {
     /**
      * Constructor used to provide custom message.
      *
-     * @param msg Message of exception
+     * @param msg message of exception
      */
-    public PythiaException(String msg) {
+    public PythiaException(final String msg) {
         super(msg);
     }
 
     /**
      * Constructor used to provide predefined error code.
      *
-     * @param code Error code
+     * @param code error code
      */
-    public PythiaException(PythiaError code) {
+    public PythiaException(final PythiaError code) {
         super(code.toString());
     }
 

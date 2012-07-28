@@ -46,12 +46,12 @@ public class Server {
     /**
      * Count of maximum connections to server.
      */
-    public final static int MAX_CONNECTIONS = 100;
+    public static final int MAX_CONNECTIONS = 2;
 
     /**
      * Root of pythia data storage
      */
-    public final static String ROOT =
+    public static final String ROOT =
             System.getProperty("java.io.tmpdir") + "pythia";
 
     private final ServerSocket server;
@@ -62,14 +62,11 @@ public class Server {
     /**
      * Create server listening to chosen port.
      *
-     * @param socket Server socket
-     * @param model Pythia data model implementation
-     * @param storage Storage used in this instance of pythia
-     * @throws IOException
+     * @param socket server socket
+     * @param model pythia data model implementation
+     * @param storage storage used in this instance of pythia
      */
-    public Server(ServerSocket socket, IDataModel model, IStorage storage)
-            throws IOException
-    {
+    public Server(ServerSocket socket, IDataModel model, IStorage storage) {
         server = socket;
         service = Executors.newFixedThreadPool(Server.MAX_CONNECTIONS);
         this.model = model;
@@ -77,10 +74,11 @@ public class Server {
     }
 
     /**
-     * Run server
+     * Run server listener.
      *
-     * @throws IOException
-     * @throws PythiaException
+     * @throws IOException if something is wrong with {@link IStorage#read} or
+     *                     {@link ServerSocket#accept}
+     * @throws PythiaException if something is wrong with {@link IStorage#read}
      */
     public void go() throws IOException, PythiaException {
         storage.read(ROOT, model);
@@ -101,11 +99,11 @@ public class Server {
     /**
      * Entry point of server application
      *
-     * @param args Command line arguments
-     * @throws Exception
+     * @param args command line arguments
+     * @throws Exception if something is wrong with server
      */
     public static void main(String[] args) throws Exception {
-        Server pythia = new Server(
+        final Server pythia = new Server(
             new ServerSocket(4444),
             new HashMapDataModel(),
             new SerializationStorage()

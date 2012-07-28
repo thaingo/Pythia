@@ -25,12 +25,10 @@ package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.DB;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.command.DropColumnFamilyCommand;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import static org.junit.Assert.assertEquals;
@@ -64,16 +62,25 @@ public class DropColumnFamilyInterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
         ParseTree stmt = new ParseTree(
-                grammar.getSymbol(grammar.STMT_DROP_COLUMNFAMILY));
+                LL1Grammar.NonTerminal.STMT_DROP_COLUMNFAMILY, null);
         stmt.add(
-            new Token(TokenType.KEYWORD, "DROP"),
-            new Token(TokenType.KEYWORD, "COLUMNFAMILY"),
-            new Token(TokenType.VARIABLE, "Test2")
+            new ParseTree(
+                Terminal.KEY_DROP,
+                new Token(TokenType.KEYWORD, "DROP")
+            ),
+            new ParseTree(
+                Terminal.KEY_COLUMNFAMILY,
+                new Token(TokenType.KEYWORD, "COLUMNFAMILY")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            )
         );
 
-        IKeySpace keySpace = new KeySpace("Test");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test");
 
         Context ctx = new Context();
         DB.INSTANCE.addKeySpace(keySpace);
@@ -81,10 +88,9 @@ public class DropColumnFamilyInterpreterTest {
 
         IInterpreter interpreter = new DropColumnFamilyInterpreter();
         DropColumnFamilyCommand cmd =
-                (DropColumnFamilyCommand)
-                interpreter.interpret(grammar, stmt, ctx);
+                (DropColumnFamilyCommand)interpreter.interpret(stmt, ctx);
 
-        assertEquals(cmd.name, "Test2");
-        assertEquals(cmd.keySpace, "Test");
+        assertEquals(cmd.getName(), "Test2");
+        assertEquals(cmd.getKeySpace(), "Test");
     }
 }

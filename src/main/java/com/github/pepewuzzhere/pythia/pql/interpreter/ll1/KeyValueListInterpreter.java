@@ -26,13 +26,13 @@ package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.pql.IGrammar;
 import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
 import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
+import com.github.pepewuzzhere.pythia.pql.Terminal;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Interpreter of node with {@link LL1Grammar#KEY_VALUES_LIST} symbol.
@@ -41,25 +41,24 @@ import java.util.Arrays;
  * @version %I%, %G%
  * @since 1.0
  */
-public class KeyValueListInterpreter implements IInterpreter {
+class KeyValueListInterpreter implements IInterpreter {
 
     @Override
-    public Object interpret(IGrammar grammar, ParseTree node, Context ctx)
-            throws PythiaException
+    public Object interpret(
+            final ParseTree node, final Context ctx) throws PythiaException
     {
-        LL1Grammar g = (LL1Grammar)grammar;
-        ArrayList<String> list = new ArrayList<>();
+        final List<String> list = new ArrayList<>();
         for (ParseTree n : node.getChildrens()) {
-            int code = g.getCode(n.getSymbol());
-            if (code == g.VAR || code == g.KEY_KEY) {
-                Token t = (Token)n.getSymbol();
-                list.add(t.getValue());
+            if (n.getSymbol() == Terminal.VAR
+               || n.getSymbol() == Terminal.KEY_KEY
+            ) {
+                list.add(n.getToken().getValue());
             }
-            if (code == g.KEY_VALUES_LIST_PRIM) {
+            if (n.getSymbol() == LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM) {
                 KeyValueListInterpreter intr = new KeyValueListInterpreter();
                 list.addAll(
                     Arrays.asList(
-                        (String[])intr.interpret(grammar, n, ctx)
+                        (String[])intr.interpret(n, ctx)
                     )
                 );
             }

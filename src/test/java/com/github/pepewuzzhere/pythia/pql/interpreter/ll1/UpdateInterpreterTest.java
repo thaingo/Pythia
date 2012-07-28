@@ -25,12 +25,10 @@ package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.DB;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.command.UpdateCommand;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import java.nio.ByteBuffer;
@@ -65,46 +63,76 @@ public class UpdateInterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
-        ParseTree stmt = new ParseTree(grammar.getSymbol(grammar.STMT_INSERT));
+        ParseTree stmt =
+                new ParseTree(LL1Grammar.NonTerminal.STMT_INSERT, null);
         ParseTree keyValue =
-                new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST));
+                new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST, null);
         ParseTree nextValue = new ParseTree(
-                grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM));
+                LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null);
         nextValue.add(
-            new ParseTree(new Token(TokenType.COMMA)),
-            new ParseTree(new Token(TokenType.VARIABLE, "name")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "Piotr")),
-            new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM))
+            new ParseTree(
+                Terminal.SYMBOL_COMMA,
+                new Token(TokenType.COMMA)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "name")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Piotr")
+           ),
+            new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null)
         );
         keyValue.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "KEY")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "pepe")),
+            new ParseTree(
+                Terminal.KEY_KEY,
+                new Token(TokenType.KEYWORD, "KEY")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "pepe")
+            ),
             nextValue
         );
         stmt.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "UPDATE")),
-            new ParseTree(new Token(TokenType.VARIABLE, "Test2")),
-            new ParseTree(new Token(TokenType.KEYWORD, "SET")),
+            new ParseTree(
+                Terminal.KEY_UPDATE,
+                new Token(TokenType.KEYWORD, "UPDATE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            ),
+            new ParseTree(
+                Terminal.KEY_SET,
+                new Token(TokenType.KEYWORD, "SET")
+            ),
             keyValue
         );
 
-         IKeySpace keySpace = new KeySpace("Test");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test");
 
         Context ctx = new Context();
         DB.INSTANCE.addKeySpace(keySpace);
         ctx.setActualKeySpace("Test");
 
         IInterpreter interpreter = new UpdateInterpreter();
-        UpdateCommand cmd =
-                (UpdateCommand)interpreter.interpret(grammar, stmt, ctx);
+        UpdateCommand cmd = (UpdateCommand)interpreter.interpret(stmt, ctx);
 
-        assertEquals(cmd.columnFamily, "Test2");
-        assertEquals(cmd.keySpace, "Test");
-        assertEquals(cmd.rowKey, ByteBuffer.wrap("pepe".getBytes()));
-        assertEquals(cmd.keys[0], ByteBuffer.wrap("name".getBytes()));
-        assertEquals(cmd.values[0], ByteBuffer.wrap("Piotr".getBytes()));
+        assertEquals(cmd.getColumnFamily(), "Test2");
+        assertEquals(cmd.getKeySpace(), "Test");
+        assertEquals(cmd.getRowKey(), ByteBuffer.wrap("pepe".getBytes()));
+        assertEquals(cmd.getKeys()[0], ByteBuffer.wrap("name".getBytes()));
+        assertEquals(cmd.getValues()[0], ByteBuffer.wrap("Piotr".getBytes()));
     }
 }

@@ -23,8 +23,9 @@
  */
 package com.github.pepewuzzhere.pythia;
 
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -55,7 +56,8 @@ public class ContextTest {
 
     @Test
     public void testUseKeySpace() {
-        IKeySpace keySpace = new KeySpace("Test");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test");
 
         Context ctx = new Context();
         try {
@@ -68,7 +70,7 @@ public class ContextTest {
 
         boolean wasThrown = false;
         try {
-            IKeySpace use = ctx.setActualKeySpace("Test2");
+            ctx.setActualKeySpace("Test2");
         } catch(PythiaException e) {
             wasThrown = true;
         }

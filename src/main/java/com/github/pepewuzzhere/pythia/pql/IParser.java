@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql;
 
 import com.github.pepewuzzhere.pythia.PythiaException;
@@ -30,14 +31,14 @@ import com.github.pepewuzzhere.pythia.PythiaException;
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  */
-public interface IParser {
+interface IParser {
 
     /**
      * Parses tokens stream and returns {@link ParseTree} structure.
      *
-     * @param tokens Tokens stream
-     * @return Parse tree created from provided nodes and PQL grammar.
-     * @throws PythiaException 
+     * @param tokens tokens stream
+     * @return parse tree created from provided nodes and PQL grammar.
+     * @throws PythiaException if there is syntax error
      */
-    ParseTree parse(Token[] tokens) throws PythiaException;
+    ParseTree parse(final Token[] tokens) throws PythiaException;
 }

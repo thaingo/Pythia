@@ -26,6 +26,10 @@ package com.github.pepewuzzhere.pythia.pql;
 
 import com.github.pepewuzzhere.pythia.PythiaError;
 import com.github.pepewuzzhere.pythia.PythiaException;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
@@ -37,78 +41,161 @@ import java.util.regex.Pattern;
  * @version %I%, %G%
  * @since 1.0
  */
-public class TableDrivenTokenIterator implements ITokenIterator {
+class TableDrivenTokenIterator implements ITokenIterator {
 
-    // LEXEME STATE
-    private final int LS_INIT      = 0; // start position
-    private final int LS_READ_WORD = 1; // reading word lexeme
-    private final int LS_WORD      = 2; // return word
-    private final int LS_SYMBOL    = 3; // return symbol
-    private final int LS_READ_VAR  = 4; // reading variable (beetwen "")
-    private final int LS_VARIABLE  = 5; // return variable
-    private final int LS_ERROR     = 6; // error
+    private static enum LexemeState {
+        LS_INIT,            // start position
+        LS_READ_WORD,       // reading word lexeme
+        LS_WORD,            // return word
+        LS_SYMBOL,          // return symbol
+        LS_READ_VAR,        // reading variable (beetwen "")
+        LS_VARIABLE,        // return variable
+        LS_ERROR;           // error
+    }
 
-    // INPUT TYPE
-    private final int IT_LETTER     = 0; // [a-zA-Z]
-    private final int IT_WHITESPACE = 1; // [ \t\n]+
-    private final int IT_SYMBOL     = 2; // [()=,]
-    private final int IT_QUOT       = 3; // ["]
-    private final int IT_OTHER      = 4; // anything else
-    private final int IT_END        = 5; // end of source
+    private static enum InputType {
+        IT_LETTER(Pattern.compile("[a-zA-Z]")), // [a-zA-Z]
+        IT_WHITESPACE(Pattern.compile("\\s")),  // [ \t\n]+
+        IT_SYMBOL(Pattern.compile("[=(),]")),   // [()=,]
+        IT_QUOT(Pattern.compile("\"")),         // ["]
+        IT_OTHER,                               // anything else
+        IT_END;                                 // end of source
+
+        private final Pattern pattern;
+
+        InputType() {
+            this.pattern = null;
+        }
+
+        InputType(Pattern pattern) {
+            this.pattern = pattern;
+        }
+
+        Pattern getPattern() {
+            return pattern;
+        }
+    }
+
+    private static final Map<LexemeState, EnumMap<InputType, LexemeState>>
+            TRANSITIONS = new EnumMap<>(LexemeState.class);
+
+    static {
+        TRANSITIONS.put(LexemeState.LS_INIT,
+                new EnumMap<InputType, LexemeState>(InputType.class));
+        TRANSITIONS.put(LexemeState.LS_READ_WORD,
+                new EnumMap<InputType, LexemeState>(InputType.class));
+        TRANSITIONS.put(LexemeState.LS_WORD,
+                new EnumMap<InputType, LexemeState>(InputType.class));
+        TRANSITIONS.put(LexemeState.LS_SYMBOL,
+                new EnumMap<InputType, LexemeState>(InputType.class));
+        TRANSITIONS.put(LexemeState.LS_READ_VAR,
+                new EnumMap<InputType, LexemeState>(InputType.class));
+        TRANSITIONS.put(LexemeState.LS_VARIABLE,
+                new EnumMap<InputType, LexemeState>(InputType.class));
+
+        TRANSITIONS.get(LexemeState.LS_INIT).put(
+                InputType.IT_LETTER, LexemeState.LS_READ_WORD);
+        TRANSITIONS.get(LexemeState.LS_INIT).put(
+                InputType.IT_WHITESPACE, LexemeState.LS_INIT);
+        TRANSITIONS.get(LexemeState.LS_INIT).put(
+                InputType.IT_SYMBOL, LexemeState.LS_SYMBOL);
+        TRANSITIONS.get(LexemeState.LS_INIT).put(
+                InputType.IT_QUOT, LexemeState.LS_READ_VAR);
+        TRANSITIONS.get(LexemeState.LS_INIT).put(
+                InputType.IT_OTHER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_INIT).put(
+                InputType.IT_END, LexemeState.LS_ERROR);
+
+        TRANSITIONS.get(LexemeState.LS_READ_WORD).put(
+                InputType.IT_LETTER, LexemeState.LS_READ_WORD);
+        TRANSITIONS.get(LexemeState.LS_READ_WORD).put(
+                InputType.IT_WHITESPACE, LexemeState.LS_WORD);
+        TRANSITIONS.get(LexemeState.LS_READ_WORD).put(
+                InputType.IT_SYMBOL, LexemeState.LS_WORD);
+        TRANSITIONS.get(LexemeState.LS_READ_WORD).put(
+                InputType.IT_QUOT, LexemeState.LS_READ_WORD);
+        TRANSITIONS.get(LexemeState.LS_READ_WORD).put(
+                InputType.IT_OTHER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_READ_WORD).put(
+                InputType.IT_END, LexemeState.LS_WORD);
+
+        TRANSITIONS.get(LexemeState.LS_WORD).put(
+                InputType.IT_LETTER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_WORD).put(
+                InputType.IT_WHITESPACE, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_WORD).put(
+                InputType.IT_SYMBOL, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_WORD).put(
+                InputType.IT_QUOT, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_WORD).put(
+                InputType.IT_OTHER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_WORD).put(
+                InputType.IT_END, LexemeState.LS_ERROR);
+
+        TRANSITIONS.get(LexemeState.LS_SYMBOL).put(
+                InputType.IT_LETTER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_SYMBOL).put(
+                InputType.IT_WHITESPACE, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_SYMBOL).put(
+                InputType.IT_SYMBOL, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_SYMBOL).put(
+                InputType.IT_QUOT, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_SYMBOL).put(
+                InputType.IT_OTHER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_SYMBOL).put(
+                InputType.IT_END, LexemeState.LS_ERROR);
+
+        TRANSITIONS.get(LexemeState.LS_READ_VAR).put(
+                InputType.IT_LETTER, LexemeState.LS_READ_VAR);
+        TRANSITIONS.get(LexemeState.LS_READ_VAR).put(
+                InputType.IT_WHITESPACE, LexemeState.LS_READ_VAR);
+        TRANSITIONS.get(LexemeState.LS_READ_VAR).put(
+                InputType.IT_SYMBOL, LexemeState.LS_READ_VAR);
+        TRANSITIONS.get(LexemeState.LS_READ_VAR).put(
+                InputType.IT_QUOT, LexemeState.LS_VARIABLE);
+        TRANSITIONS.get(LexemeState.LS_READ_VAR).put(
+                InputType.IT_OTHER, LexemeState.LS_READ_VAR);
+        TRANSITIONS.get(LexemeState.LS_READ_VAR).put(
+                InputType.IT_END, LexemeState.LS_ERROR);
+
+        TRANSITIONS.get(LexemeState.LS_VARIABLE).put(
+                InputType.IT_LETTER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_VARIABLE).put(
+                InputType.IT_WHITESPACE, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_VARIABLE).put(
+                InputType.IT_SYMBOL, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_VARIABLE).put(
+                InputType.IT_QUOT, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_VARIABLE).put(
+                InputType.IT_OTHER, LexemeState.LS_ERROR);
+        TRANSITIONS.get(LexemeState.LS_VARIABLE).put(
+                InputType.IT_END, LexemeState.LS_ERROR);
+
+    }
 
     private String source;  // source string
     private int pos = 0; // position of current character of source
-    private final int[][] transition; // transition states tab;e
-    private final boolean[] acceptState; // array with states that are accepted
-                                         // as correct lexeme input
-    private final Pattern[] inputPattern; // array with patterns descibing
-                                          // correct input values
 
     // correct input types
-    private final int[] inputTypes = {
-        IT_LETTER, IT_WHITESPACE, IT_SYMBOL, IT_QUOT};
+    private static final Set<InputType> INPUT_TYPES =
+            EnumSet.of(
+                InputType.IT_LETTER, InputType.IT_WHITESPACE,
+                InputType.IT_SYMBOL, InputType.IT_QUOT
+            );
 
-    // keywords of PQL
-    private final String[] keywords = {
+    // states that are accepted as correct lexeme input
+    private static final Set<LexemeState> ACCEPT_STATE =
+            EnumSet.of(
+                LexemeState.LS_WORD, LexemeState.LS_SYMBOL,
+                LexemeState.LS_VARIABLE
+            );
+
+    // KEYWORDS of PQL
+    private static final String[] KEYWORDS = {
         "CREATE", "USE", "DROP", "SELECT", "UPDATE", "INSERT", "DELETE",
         "KEYSPACE", "COLUMNFAMILY", "KEY", "FROM", "WHERE", "SET",
         "INTO", "VALUES", "KILL"
     };
-
-    /**
-     * Initialization of transition table, states to accept as correct lexemes
-     * and possible input patterns.
-     */
-    public TableDrivenTokenIterator() {
-
-        // state tranistion table
-        transition = new int[][] {
-            {LS_READ_WORD, LS_INIT, LS_SYMBOL, LS_READ_VAR, LS_ERROR, LS_ERROR},
-            {LS_READ_WORD, LS_WORD, LS_WORD, LS_WORD, LS_ERROR, LS_WORD},
-            {LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR},
-            {LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR},
-            {LS_READ_VAR, LS_READ_VAR, LS_READ_VAR, LS_VARIABLE, LS_READ_VAR,
-                LS_ERROR},
-            {LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR, LS_ERROR},
-        };
-
-        // state to accept as correct lexeme
-        acceptState = new boolean[7];
-        acceptState[LS_INIT]      = false;
-        acceptState[LS_READ_WORD] = false;
-        acceptState[LS_WORD]      = true;
-        acceptState[LS_READ_VAR]  = false;
-        acceptState[LS_SYMBOL]    = true;
-        acceptState[LS_VARIABLE]  = true;
-        acceptState[LS_ERROR]     = false;
-
-        // input type patterns
-        inputPattern = new Pattern[4];
-        inputPattern[IT_LETTER]     = Pattern.compile("[a-zA-Z]");
-        inputPattern[IT_WHITESPACE] = Pattern.compile("\\s");
-        inputPattern[IT_SYMBOL]     = Pattern.compile("[=(),]");
-        inputPattern[IT_QUOT]       = Pattern.compile("\"");
-    }
 
     @Override
     public Token next() throws PythiaException {
@@ -117,43 +204,45 @@ public class TableDrivenTokenIterator implements ITokenIterator {
             return null;
         }
 
-        int state = LS_INIT;
-        int inputType = IT_OTHER;
-        Stack<Character> readed = new Stack<>();
+        LexemeState state = LexemeState.LS_INIT;
+        InputType inputType = InputType.IT_OTHER;
+        final Stack<Character> readed = new Stack<>();
 
         // For each character to end of input string - break when error or
         // correct lexeme found.
-        while ((state != LS_ERROR)
-                && !acceptState[state]
-                && (inputType != IT_END)
+        while ((state != LexemeState.LS_ERROR)
+                && !ACCEPT_STATE.contains(state)
+                && (inputType != InputType.IT_END)
         ) {
             char c = 0;
             // if not end of string
             if (pos < source.length()) {
-                inputType = IT_OTHER;
+                inputType = InputType.IT_OTHER;
                 c = source.charAt(pos);
                 // find input type
-                for (int i = 0; i < inputTypes.length; ++i) {
-                    if (inputPattern[inputTypes[i]].matcher("" + c).find()) {
-                        inputType = inputTypes[i];
+                for (InputType input : INPUT_TYPES) {
+                    final Pattern pattern = input.getPattern();
+                    if (pattern != null && pattern.matcher("" + c).find()) {
+                        inputType = input;
                         break;
                     }
                 }
+
             } else {
-                inputType = IT_END;
+                inputType = InputType.IT_END;
             }
             // get current state
-            state = transition[state][inputType];
+            state = from(state, inputType);
             // move next position only if not character that ends word
-            if (state != LS_WORD) {
+            if (state != LexemeState.LS_WORD) {
                 pos++;
                 // read character only if its part of keyword, symbol or
                 // variable
-                if (inputType != IT_QUOT
+                if (inputType != InputType.IT_QUOT
                     && (
-                        state == LS_READ_VAR ||
-                        state == LS_READ_WORD ||
-                        state == LS_SYMBOL
+                        state == LexemeState.LS_READ_VAR ||
+                        state == LexemeState.LS_READ_WORD ||
+                        state == LexemeState.LS_SYMBOL
                         )
                 ) {
                     readed.push(c);
@@ -162,7 +251,7 @@ public class TableDrivenTokenIterator implements ITokenIterator {
         }
 
         // if not correct lexeme throw error
-        if (!acceptState[state]) {
+        if (!ACCEPT_STATE.contains(state)) {
             throw new PythiaException(PythiaError.SYMBOL_NOT_FOUND);
         }
 
@@ -202,7 +291,7 @@ public class TableDrivenTokenIterator implements ITokenIterator {
     }
 
     @Override
-    public void setSource(String src) {
+    public void setSource(final String src) {
         source = src;
         pos    = 0;
     }
@@ -212,19 +301,25 @@ public class TableDrivenTokenIterator implements ITokenIterator {
         return (source != null) && (pos < source.length());
     }
 
-    /**
+    /*
      * Checks if string is keyword.
      *
-     * @param readed String to check
-     * @return True if it is keyword, false otherwise
+     * @param readed string to check
+     * @return true if it is keyword, false otherwise
      */
     private boolean isKeyword(String readed) {
-        for (int i = 0; i < keywords.length; ++i) {
-            if (keywords[i].equalsIgnoreCase(readed)) {
+        for (int i = 0; i < KEYWORDS.length; ++i) {
+            if (KEYWORDS[i].equalsIgnoreCase(readed)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static LexemeState from(
+        final LexemeState state, final InputType type
+    ) {
+        return TRANSITIONS.get(state).get(type);
     }
 
 }

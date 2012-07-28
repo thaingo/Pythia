@@ -39,20 +39,16 @@ import java.net.Socket;
  */
 public class Client {
 
-    /**
-     * Receiver receive output from server
-     */
-    public final Receiver receiver;
-
-    private PrintStream out;
+    private final Receiver receiver;
+    private final PrintStream out;
 
     /**
      * Creates client application for pythia database.
      *
-     * @param socket Socket instance - connection to server
-     * @throws IOException
+     * @param socket socket instance - connection to server
+     * @throws IOException if something is wrong with {@link PrintStream}
      */
-    public Client(Socket socket) throws IOException {
+    public Client(final Socket socket) throws IOException {
         out = new PrintStream(socket.getOutputStream());
 
         this.receiver = new Receiver(socket);
@@ -63,31 +59,35 @@ public class Client {
      */
     public void startReceiving() {
         receiver.start();
+
+        // for testing purposes - force one run method invocation
+        receiver.run();
     }
 
     /**
      * Sends message to server.
      *
-     * @param cmd Message
-     * @throws IOException
+     * @param cmd the message that is send to server
+     * @throws IOException if something is wrong with
+     *                     client - server communication
      */
-    public void send(String cmd) throws IOException {
+    public void send(final String cmd) throws IOException {
         out.println(cmd);
     }
 
     /**
      * Client start point
      *
-     * @param args Arguments from commandline
-     * @throws Exception
+     * @param args arguments from command line
+     * @throws Exception if starting client is impossible
      */
     public static void main(String[] args) throws Exception {
         String cmd = "";
 
-        Client client = new Client(new Socket("localhost", 4444));
+        final Client client = new Client(new Socket("localhost", 4444));
         client.startReceiving();
 
-        BufferedReader read =
+        final BufferedReader read =
                 new BufferedReader(new InputStreamReader(System.in));
 
         while (!cmd.equals("quit")) {

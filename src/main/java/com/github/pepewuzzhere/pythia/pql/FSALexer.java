@@ -26,6 +26,7 @@ package com.github.pepewuzzhere.pythia.pql;
 
 import com.github.pepewuzzhere.pythia.PythiaException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Finite state automaton implementation of {@link ILexer}.
@@ -37,17 +38,17 @@ import java.util.ArrayList;
 public class FSALexer implements ILexer {
 
     @Override
-    public Token[] tokenize(String source, ITokenIterator it)
+    public Token[] tokenize(final String source, final ITokenIterator it)
             throws PythiaException
     {
-        ArrayList<Token> tokens = new ArrayList<>();
+        final List<Token> tokens = new ArrayList<>();
         it.setSource(source);
 
         while (it.hasNext()) {
             tokens.add(it.next());
         }
 
-        return tokens.toArray(new Token[1]);
+        return tokens.toArray(new Token[0]);
     }
 
 }

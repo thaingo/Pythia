@@ -77,7 +77,7 @@ public class ClientTest {
         System.setOut(new PrintStream(output));
 
         client.send("KEYSPACE test");
-        client.receiver.run();
+        client.startReceiving();
 
         assertEquals(
             "KEYSPACE test" + System.getProperty("line.separator"),

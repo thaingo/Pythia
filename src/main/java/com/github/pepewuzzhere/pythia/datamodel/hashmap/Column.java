@@ -21,9 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.datamodel.hashmap;
 
 import com.github.pepewuzzhere.pythia.datamodel.IColumn;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -33,7 +35,7 @@ import java.util.Arrays;
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  */
-public class Column implements IColumn {
+class Column implements IColumn, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -44,9 +46,9 @@ public class Column implements IColumn {
      * Constructor requires key because <code>Column</code> must have one, only
      * value is optional.
      *
-     * @param key Key of this column
+     * @param key key of this column
      */
-    public Column(ByteBuffer key) {
+    public Column(final ByteBuffer key) {
         this.key = key.array();
     }
 
@@ -65,7 +67,7 @@ public class Column implements IColumn {
     }
 
     @Override
-    public ByteBuffer setValue(ByteBuffer value) {
+    public ByteBuffer setValue(final ByteBuffer value) {
         ByteBuffer oldValue = null;
         if (this.value != null) {
             oldValue = ByteBuffer.wrap(this.value);

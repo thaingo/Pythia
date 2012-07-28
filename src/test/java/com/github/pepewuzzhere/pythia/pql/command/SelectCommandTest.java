@@ -26,14 +26,12 @@ package com.github.pepewuzzhere.pythia.pql.command;
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IRow;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.ColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.Row;
 import java.nio.ByteBuffer;
-import static org.junit.Assert.*;
 import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -79,14 +77,15 @@ public class SelectCommandTest {
 
     @Test
     public void testExecuteIfColumnFamilyNotExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer rowKey = ByteBuffer.wrap("Piotr".getBytes());
 
         IDBCommand command = new SelectCommand("Users", "Test", rowKey);
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
-            command.execute(new HashMapDataModel());
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -96,16 +95,17 @@ public class SelectCommandTest {
 
     @Test
     public void testExecuteIfRowNotExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer rowKey = ByteBuffer.wrap("Piotr".getBytes());
 
         IDBCommand command = new SelectCommand("Users", "Test", rowKey);
 
         IRow rows = null;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
-                       .addColumnFamily("Users", new ColumnFamily());
-            rows = (IRow) command.execute(new HashMapDataModel());
+                       .addColumnFamily("Users", model.createColumnFamily());
+            rows = (IRow) command.execute(model);
         } catch(PythiaException e) {
             fail(e.getMessage());
         }
@@ -115,19 +115,20 @@ public class SelectCommandTest {
 
     @Test
     public void testExecuteIfRowExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer rowKey = ByteBuffer.wrap("Piotr".getBytes());
 
         IDBCommand command = new SelectCommand("Users", "Test", rowKey);
 
         IRow rows = null;
-        IColumnFamily columnFamily = new ColumnFamily();
+        IColumnFamily columnFamily = model.createColumnFamily();
 
         try {
-            columnFamily.addRow(new Row(rowKey));
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            columnFamily.addRow(model.createRow(rowKey));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
                        .addColumnFamily("Users", columnFamily);
-            rows = (IRow)command.execute(new HashMapDataModel());
+            rows = (IRow)command.execute(model);
         } catch(PythiaException e) {
             fail(e.getMessage());
         }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.datamodel;
 
 import java.nio.ByteBuffer;
@@ -37,30 +38,31 @@ public interface IDataModel {
     /**
      * Creates concrete implementation of {@link IKeySpace}
      *
-     * @param name Name of keyspace
-     * @return Concrete implementation of <code>IKeySpace</code>
+     * @param name name of keyspace
+     * @return concrete implementation of <code>IKeySpace</code>
      */
-    IKeySpace createKeySpace(String name);
+    IKeySpace createKeySpace(final String name);
 
     /**
      * Creates concrete implementation of {@link IColumnFamily}
      *
-     * @return Concrete implementation of <code>IColumnFamily</code>
+     * @return concrete implementation of <code>IColumnFamily</code>
      */
     IColumnFamily createColumnFamily();
 
     /**
      * Creates concrete implementation of {@link IColumn}
      *
-     * @param key Key of column
-     * @return Concrete implementation of <code>IColumn</code>
+     * @param key key of column
+     * @return concrete implementation of <code>IColumn</code>
      */
-    IColumn createColumn(ByteBuffer key);
+    IColumn createColumn(final ByteBuffer key);
 
     /**
      * Creates concrete implementation of {@link IRow}
-     * @param key Key of row
-     * @return Concrete implementation of <code>IRow</code>
+     *
+     * @param key key of row
+     * @return concrete implementation of <code>IRow</code>
      */
-    IRow createRow(ByteBuffer key);
+    IRow createRow(final ByteBuffer key);
 }

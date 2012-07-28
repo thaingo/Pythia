@@ -33,35 +33,37 @@ import java.util.Arrays;
  * @version %I%, %G%
  * @since 1.0
  */
-public class Production {
+class Production {
 
-    private final int[] symbols;
+    private final ISymbol[] symbols;
 
     /**
      * Creates production - list of symbols codes to produce nonterminal symbol.
      *
-     * @param symbols
+     * @param symbols list of symbol that describe production
      */
-    public Production(int... symbols) {
+    Production(final ISymbol... symbols) {
         this.symbols = symbols;
     }
 
     /**
      * Gets symbol list for this production.
      *
-     * @return Symbol list
+     * @return symbol list
      */
-    public int[] getSymbols() {
-        return symbols;
+    ISymbol[] getSymbols() {
+        ISymbol[] clone = new ISymbol[symbols.length];
+        System.arraycopy(symbols, 0, clone, 0, symbols.length);
+        return clone;
     }
 
     /**
      * Checks if this production contains provided symbol.
      *
-     * @param symbol Symbol code to find
-     * @return True if production contains this symbol, false otherwise.
+     * @param symbol symbol code to find
+     * @return true if production contains this symbol, false otherwise.
      */
-    public boolean hasSymbol(int symbol) {
+    boolean hasSymbol(final ISymbol symbol) {
         for (int i = 0; i < symbols.length; ++i) {
             if (symbols[i] == symbol) {
                 return true;
@@ -73,20 +75,20 @@ public class Production {
     /**
      * Gets next symbol in production.
      *
-     * @param symbol Symbol code to find
-     * @return Symbol next to provided or -1
+     * @param symbol symbol code to find
+     * @return symbol next to provided or null
      */
-    public int nextSymbol(int symbol) {
+    ISymbol nextSymbol(final ISymbol symbol) {
         for (int i = 0; i < symbols.length; ++i) {
             if (symbols[i] == symbol) {
                 if ((i + 1) < symbols.length) {
                     return symbols[i + 1];
                 } else {
-                    return -1;
+                    return null;
                 }
             }
         }
-        return -1;
+        return null;
     }
 
     @Override
@@ -94,8 +96,8 @@ public class Production {
         if (!(obj instanceof Production)) {
             return false;
         }
-        int[] s1 = ((Production) obj).getSymbols();
-        int[] s2 = getSymbols();
+        final ISymbol[] s1 = ((Production) obj).getSymbols();
+        final ISymbol[] s2 = getSymbols();
 
         return Arrays.equals(s1, s2);
     }

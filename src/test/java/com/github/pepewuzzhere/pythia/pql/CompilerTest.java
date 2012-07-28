@@ -25,7 +25,8 @@ package com.github.pepewuzzhere.pythia.pql;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.DB;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
 import com.github.pepewuzzhere.pythia.pql.command.*;
 import static org.junit.Assert.assertTrue;
 import org.junit.*;
@@ -58,9 +59,10 @@ public class CompilerTest {
 
     @Test
     public void testCompile() throws Exception {
+        IDataModel model = new HashMapDataModel();
         Compiler compiler = new Compiler(new FSALexer(), new LL1Grammar());
         Context ctx = new Context();
-        DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+        DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
         ctx.setActualKeySpace("Test");
 
         assertTrue(

@@ -31,9 +31,9 @@ import org.junit.*;
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  */
-public class NonTerminalTest {
+public class TerminalTest {
 
-    public NonTerminalTest() {
+    public TerminalTest() {
     }
 
     @BeforeClass
@@ -52,25 +52,31 @@ public class NonTerminalTest {
     public void tearDown() {
     }
 
+
     @Test
     public void testEquals() {
-        IGrammar grammar = new LL1Grammar();
-        NonTerminal t1 = new NonTerminal(
-            new Production(grammar.KEY_COLUMNFAMILY, grammar.KEY_DROP),
-            new Production(grammar.KEY_COLUMNFAMILY, grammar.KEY_KILL)
-        );
-        NonTerminal t2 = new NonTerminal(
-            new Production(grammar.KEY_COLUMNFAMILY, grammar.KEY_DROP),
-            new Production(grammar.KEY_COLUMNFAMILY, grammar.KEY_KILL)
-        );
-        NonTerminal t3 = new NonTerminal(
-            new Production(grammar.KEY_COLUMNFAMILY, grammar.KEY_KILL)
-        );
+        Token t1 = new Token(TokenType.KEYWORD, "CREATE");
+        Token t2 = new Token(TokenType.KEYWORD, "CREATE");
+        Token t3 = new Token(TokenType.KEYWORD, "KEYSPACE");
+        Token t4 = new Token(TokenType.VARIABLE, "Test");
 
         assertTrue(t1.equals(t2));
-        assertTrue(t1.equals(t1));
-        assertTrue(t2.equals(t1));
-        assertFalse(t3.equals(t2));
+        assertFalse(t1.equals(t3));
+        assertFalse(t1.equals(t4));
+    }
+
+    @Test
+    public void testGrammarEquals() {
+        Token t1 = new Token(TokenType.KEYWORD, "CREATE");
+        Token t2 = new Token(TokenType.KEYWORD, "CREATE");
+        Token t3 = new Token(TokenType.KEYWORD, "KEYSPACE");
+        Token t4 = new Token(TokenType.VARIABLE, "Test");
+        Token t5 = new Token(TokenType.VARIABLE, "Test2");
+
+        assertTrue(Terminal.KEY_CREATE.grammarEquals(t2));
+        assertFalse(Terminal.KEY_CREATE.grammarEquals(t3));
+        assertFalse(Terminal.KEY_CREATE.grammarEquals(t4));
+        assertTrue(Terminal.VAR.grammarEquals(t5));
     }
 
 }

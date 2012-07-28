@@ -26,12 +26,10 @@ package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.command.*;
 import static org.junit.Assert.assertTrue;
 import org.junit.*;
@@ -55,6 +53,7 @@ public class StartStmtInterpreterTest {
 
     @Before
     public void setUp() {
+        DB.INSTANCE.dropDB();
     }
 
     @After
@@ -63,151 +62,298 @@ public class StartStmtInterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
-
         ParseTree[] input = new ParseTree[10];
 
-        input[0] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
+        input[0] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
         ParseTree stmt0 = new ParseTree(
-                grammar.getSymbol(grammar.STMT_CREATE_KEYSPACE));
+                LL1Grammar.NonTerminal.STMT_CREATE_KEYSPACE, null);
         input[0].add(stmt0);
         stmt0.add(
-            new Token(TokenType.KEYWORD, "KEYSPACE"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_KEYSPACE,
+                new Token(TokenType.KEYWORD, "KEYSPACE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test")
+            )
         );
 
-        input[1] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
+        input[1] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
         ParseTree stmt1 = new ParseTree(
-                grammar.getSymbol(grammar.STMT_DROP_KEYSPACE));
+                LL1Grammar.NonTerminal.STMT_DROP_KEYSPACE, null);
         input[1].add(stmt1);
         stmt1.add(
-            new Token(TokenType.KEYWORD, "KILL"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_KILL,
+                new Token(TokenType.KEYWORD, "KILL")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test")
+            )
         );
 
-        input[2] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
+        input[2] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
         ParseTree stmt2 = new ParseTree(
-                grammar.getSymbol(grammar.STMT_USE_KEYSPACE));
+                LL1Grammar.NonTerminal.STMT_USE_KEYSPACE, null);
         input[2].add(stmt2);
         stmt2.add(
-            new Token(TokenType.KEYWORD, "USE"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_USE,
+                new Token(TokenType.KEYWORD, "USE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test")
+            )
         );
 
-        input[3] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
+        input[3] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
         ParseTree stmt3 = new ParseTree(
-                grammar.getSymbol(grammar.STMT_CREATE_COLUMNFAMILY));
+                LL1Grammar.NonTerminal.STMT_CREATE_COLUMNFAMILY, null);
         input[3].add(stmt3);
         stmt3.add(
-            new Token(TokenType.KEYWORD, "CREATE"),
-            new Token(TokenType.KEYWORD, "COLUMNFAMILY"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_CREATE,
+                new Token(TokenType.KEYWORD, "CREATE")
+            ),
+            new ParseTree(
+                Terminal.KEY_COLUMNFAMILY,
+                new Token(TokenType.KEYWORD, "COLUMNFAMILY")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            )
         );
 
-        input[4] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
+        input[4] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
         ParseTree stmt4 = new ParseTree(
-                grammar.getSymbol(grammar.STMT_DROP_COLUMNFAMILY));
+                LL1Grammar.NonTerminal.STMT_DROP_COLUMNFAMILY, null);
         input[4].add(stmt4);
         stmt4.add(
-            new Token(TokenType.KEYWORD, "DROP"),
-            new Token(TokenType.KEYWORD, "COLUMNFAMILY"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_DROP,
+                new Token(TokenType.KEYWORD, "DROP")
+            ),
+            new ParseTree(
+                Terminal.KEY_COLUMNFAMILY,
+                new Token(TokenType.KEYWORD, "COLUMNFAMILY")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            )
         );
 
-        input[5] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
-        ParseTree stmt5 = new ParseTree(grammar.getSymbol(grammar.STMT_INSERT));
+        input[5] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
+        ParseTree stmt5 =
+                new ParseTree(LL1Grammar.NonTerminal.STMT_INSERT, null);
         input[5].add(stmt5);
         ParseTree keyValue =
-                new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST));
+                new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST, null);
         ParseTree nextValue = new ParseTree(
-                grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM));
+                LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null);
         nextValue.add(
-            new ParseTree(new Token(TokenType.COMMA)),
-            new ParseTree(new Token(TokenType.VARIABLE, "name")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "Piotr")),
-            new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM))
+            new ParseTree(
+                Terminal.SYMBOL_COMMA,
+                new Token(TokenType.COMMA)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "name")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Piotr")
+            ),
+            new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null)
         );
         keyValue.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "KEY")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "pepe")),
+            new ParseTree(
+                Terminal.KEY_KEY,
+                new Token(TokenType.KEYWORD, "KEY")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "pepe")
+            ),
             nextValue
         );
         stmt5.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "INSERT")),
-            new ParseTree(new Token(TokenType.KEYWORD, "INTO")),
-            new ParseTree(new Token(TokenType.VARIABLE, "Test")),
-            new ParseTree(new Token(TokenType.LPAREN)),
+            new ParseTree(
+                Terminal.KEY_INSERT,
+                new Token(TokenType.KEYWORD, "INSERT")
+            ),
+            new ParseTree(
+                Terminal.KEY_INTO,
+                new Token(TokenType.KEYWORD, "INTO")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_LPAREN,
+                new Token(TokenType.LPAREN)
+            ),
             keyValue,
-            new ParseTree(new Token(TokenType.RPAREN))
+            new ParseTree(
+                Terminal.SYMBOL_RPAREN,
+                new Token(TokenType.RPAREN)
+            )
         );
 
-        input[6] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
-        ParseTree stmt6 = new ParseTree(grammar.getSymbol(grammar.STMT_UPDATE));
+        input[6] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
+        ParseTree stmt6 =
+                new ParseTree(LL1Grammar.NonTerminal.STMT_UPDATE, null);
         input[6].add(stmt6);
         ParseTree keyValue2 =
-                new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST));
+                new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST, null);
         ParseTree nextValue2 = new ParseTree(
-                grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM));
+                LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null);
         nextValue2.add(
-            new ParseTree(new Token(TokenType.COMMA)),
-            new ParseTree(new Token(TokenType.VARIABLE, "name")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "Piotr")),
-            new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM))
+            new ParseTree(
+                Terminal.SYMBOL_COMMA,
+                new Token(TokenType.COMMA)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "name")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Piotr")
+           ),
+            new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null)
         );
         keyValue2.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "KEY")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "pepe")),
+            new ParseTree(
+                Terminal.KEY_KEY,
+                new Token(TokenType.KEYWORD, "KEY")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "pepe")
+            ),
             nextValue2
         );
         stmt6.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "UPDATE")),
-            new ParseTree(new Token(TokenType.VARIABLE, "Test")),
-            new ParseTree(new Token(TokenType.KEYWORD, "SET")),
+            new ParseTree(
+                Terminal.KEY_UPDATE,
+                new Token(TokenType.KEYWORD, "UPDATE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            ),
+            new ParseTree(
+                Terminal.KEY_SET,
+                new Token(TokenType.KEYWORD, "SET")
+            ),
             keyValue2
         );
 
-        input[7] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
-        ParseTree stmt7 = new ParseTree(grammar.getSymbol(grammar.STMT_SELECT));
+        input[7] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
+        ParseTree stmt7 =
+                new ParseTree(LL1Grammar.NonTerminal.STMT_SELECT, null);
         input[7].add(stmt7);
-        ParseTree where = new ParseTree(grammar.getSymbol(grammar.WHERE));
+        ParseTree where = new ParseTree(LL1Grammar.NonTerminal.WHERE, null);
         where.add(
-            new Token(TokenType.KEYWORD, "WHERE"),
-            new Token(TokenType.KEYWORD, "KEY"),
-            new Token(TokenType.EQUAL),
-            new Token(TokenType.VARIABLE, "pepe")
+            new ParseTree(
+                Terminal.KEY_WHERE,
+                new Token(TokenType.KEYWORD, "WHERE")
+            ),
+            new ParseTree(
+                Terminal.KEY_KEY,
+                new Token(TokenType.KEYWORD, "KEY")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "pepe")
+            )
         );
         stmt7.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "SELECT")),
-            new ParseTree(new Token(TokenType.KEYWORD, "FROM")),
-            new ParseTree(new Token(TokenType.VARIABLE, "Test")),
+            new ParseTree(
+                Terminal.KEY_SELECT,
+                new Token(TokenType.KEYWORD, "SELECT")
+            ),
+            new ParseTree(
+                Terminal.KEY_FROM,
+                new Token(TokenType.KEYWORD, "FROM")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            ),
             where
         );
 
-        input[8] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
-        ParseTree stmt8 = new ParseTree(grammar.getSymbol(grammar.STMT_DELETE));
+        input[8] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
+        ParseTree stmt8 =
+                new ParseTree(LL1Grammar.NonTerminal.STMT_DELETE, null);
         input[8].add(stmt8);
-        ParseTree where2 = new ParseTree(grammar.getSymbol(grammar.WHERE));
+        ParseTree where2 = new ParseTree(LL1Grammar.NonTerminal.WHERE, null);
         where2.add(
-            new Token(TokenType.KEYWORD, "WHERE"),
-            new Token(TokenType.KEYWORD, "KEY"),
-            new Token(TokenType.EQUAL),
-            new Token(TokenType.VARIABLE, "pepe")
+            new ParseTree(
+                Terminal.KEY_WHERE,
+                new Token(TokenType.KEYWORD, "WHERE")
+            ),
+            new ParseTree(
+                Terminal.KEY_KEY,
+                new Token(TokenType.KEYWORD, "KEY")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "pepe")
+            )
         );
         stmt8.add(
-            new ParseTree(new Token(TokenType.KEYWORD, "DELETE")),
-            new ParseTree(new Token(TokenType.KEYWORD, "FROM")),
-            new ParseTree(new Token(TokenType.VARIABLE, "Test")),
+            new ParseTree(
+                Terminal.KEY_DELETE,
+                new Token(TokenType.KEYWORD, "DELETE")
+            ),
+            new ParseTree(
+                Terminal.KEY_FROM,
+                new Token(TokenType.KEYWORD, "FROM")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test2")
+            ),
             where2
         );
-        input[9] = new ParseTree(grammar.getSymbol(grammar.STMT_START));
-        ParseTree stmt9 = new ParseTree(grammar.getSymbol(grammar.WHERE));
+        input[9] = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
+        ParseTree stmt9 = new ParseTree(LL1Grammar.NonTerminal.WHERE, null);
         input[9].add(stmt9);
 
-        IKeySpace keySpace = new KeySpace("Test2");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test2");
 
         Context ctx = new Context();
         DB.INSTANCE.addKeySpace(keySpace);
@@ -216,46 +362,46 @@ public class StartStmtInterpreterTest {
         StartStmtInterpreter interpreter = new StartStmtInterpreter();
 
         assertTrue(
-            interpreter.interpret(grammar, input[0], ctx)
+            interpreter.interpret(input[0], ctx)
                 instanceof CreateKeySpaceCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[1], ctx)
+            interpreter.interpret(input[1], ctx)
                 instanceof DropKeySpaceCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[2], ctx)
+            interpreter.interpret(input[2], ctx)
                 instanceof UseKeySpaceCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[3], ctx)
+            interpreter.interpret(input[3], ctx)
                 instanceof CreateColumnFamilyCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[4], ctx)
+            interpreter.interpret(input[4], ctx)
                 instanceof DropColumnFamilyCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[5], ctx)
+            interpreter.interpret(input[5], ctx)
                 instanceof InsertCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[6], ctx)
+            interpreter.interpret(input[6], ctx)
                 instanceof UpdateCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[7], ctx)
+            interpreter.interpret(input[7], ctx)
                 instanceof SelectCommand
         );
         assertTrue(
-            interpreter.interpret(grammar, input[8], ctx)
+            interpreter.interpret(input[8], ctx)
                 instanceof DeleteCommand
         );
 
         // check for syntax error
         boolean wasThrown = false;
         try {
-            interpreter.interpret(grammar, input[9], ctx);
+            interpreter.interpret(input[9], ctx);
         } catch (PythiaException e) {
             wasThrown = true;
         }

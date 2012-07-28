@@ -45,7 +45,7 @@ import java.net.Socket;
  * @version %I%, %G%
  * @since 1.0
  */
-public class ServerThread implements Runnable {
+class ServerThread implements Runnable {
 
     private final Socket socket;
     private final BufferedReader in;
@@ -55,16 +55,18 @@ public class ServerThread implements Runnable {
     private final IStorage storage;
 
     /**
-     * Creates server thread. Needs socket from server and used data model.
+     * Creates server thread.
      *
-     * @param socket Socket instance
-     * @param model Used data model
-     * @param storage Storage used in this instance of pythia
-     * @throws IOException
+     * Needs socket from server and used data model.
+     *
+     * @param socket socket instance
+     * @param model data model to use
+     * @param storage storage used in this instance of pythia
+     * @throws IOException if something is wrong with i/o
      */
-    public ServerThread(Socket socket, IDataModel model, IStorage storage)
-            throws IOException
-    {
+    public ServerThread(
+        final Socket socket, final IDataModel model, final IStorage storage
+    ) throws IOException {
         this.socket = socket;
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintStream(socket.getOutputStream());
@@ -77,13 +79,14 @@ public class ServerThread implements Runnable {
     public void run() {
         try {
             String command;
-            Compiler compiler = new Compiler(new FSALexer(), new LL1Grammar());
+            final Compiler compiler =
+                    new Compiler(new FSALexer(), new LL1Grammar());
             do {
                 try {
                     command = in.readLine();
                     System.out.println("Command: " + command);
                     if (command != null) {
-                        IDBCommand cmd = compiler.compile(command, ctx);
+                        final IDBCommand cmd = compiler.compile(command, ctx);
                         Object response = cmd.execute(model);
                         if (response != null) {
                             out.println(response.toString());
@@ -96,7 +99,7 @@ public class ServerThread implements Runnable {
                 }
                 out.flush();
             } while (!socket.isClosed());
-        } catch (IOException e) {
+        } catch (IOException | PythiaException e) {
             throw new RuntimeException(e);
         }
 

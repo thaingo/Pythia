@@ -21,12 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaError;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.datamodel.*;
+import com.github.pepewuzzhere.pythia.datamodel.IColumn;
+import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
+import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
+import com.github.pepewuzzhere.pythia.datamodel.IRow;
 import java.nio.ByteBuffer;
 
 /**
@@ -38,43 +43,44 @@ import java.nio.ByteBuffer;
  */
 public class UpdateCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of column family of updated row
      */
-    public final String columnFamily;
+    private final String columnFamily;
 
-    /**
+    /*
      * Name of used keyspace
      */
-    public final String keySpace;
+    private final String keySpace;
 
-    /**
+    /*
      * Value of updated row key
      */
-    public final ByteBuffer rowKey;
+    private final ByteBuffer rowKey;
 
-    /**
+    /*
      * Updated keys
      */
-    public final ByteBuffer[] keys;
+    private final ByteBuffer[] keys;
 
-    /**
+    /*
      * New values of keys
      */
-    public final ByteBuffer[] values;
+    private final ByteBuffer[] values;
 
     /**
      * Sets all parameters used to update existing row in column family.
      *
-     * @param columnFamily Name of column family
-     * @param keySpace Used keyspace
-     * @param rowKey Key of updated row
-     * @param keys List of keys in row to update (must be same length as values)
-     * @param values List of new values in row (must be same length as keys)
+     * @param columnFamily name of column family
+     * @param keySpace used keyspace
+     * @param rowKey key of updated row
+     * @param keys list of keys in row to update (must be same length as values)
+     * @param values list of new values in row (must be same length as keys)
      */
     public UpdateCommand(
-            String columnFamily, String keySpace, ByteBuffer rowKey,
-            ByteBuffer[] keys, ByteBuffer[] values
+        final String columnFamily, final String keySpace,
+        final ByteBuffer rowKey, final ByteBuffer[] keys,
+        final ByteBuffer[] values
     ) {
         this.columnFamily = columnFamily;
         this.keySpace     = keySpace;
@@ -87,16 +93,16 @@ public class UpdateCommand implements IDBCommand {
      * Updates existing row in column family.
      *
      * @param model <code>IDataModel</code> implementation
-     * @throws PythiaException
+     * @throws PythiaException if there is a problem with row updating
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
+    public Object execute(final IDataModel model) throws PythiaException {
 
         if (keys.length != values.length) {
             throw new PythiaException(PythiaError.INVALID_ARGUMENS);
         }
 
-        IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
+        final IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
 
         // keyspace check
         if (space != null) {
@@ -120,7 +126,7 @@ public class UpdateCommand implements IDBCommand {
                     if (column != null) {
                         row.updateColumn(keys[i], values[i]);
                     } else { // or add new
-                        IColumn newColumn = model.createColumn(keys[i]);
+                        final IColumn newColumn = model.createColumn(keys[i]);
                         newColumn.setValue(values[i]);
                         row.addColumn(newColumn);
                     }
@@ -133,6 +139,35 @@ public class UpdateCommand implements IDBCommand {
             throw new PythiaException(PythiaError.DATA_NOT_FOUND);
         }
         return null;
+    }
+    
+    // test only
+    public String getKeySpace() {
+        return keySpace;
+    }
+
+    // test only
+    public String getColumnFamily() {
+        return columnFamily;
+    }
+
+    // test only
+    public ByteBuffer getRowKey() {
+        return ByteBuffer.wrap(rowKey.array().clone());
+    }
+
+    // test only
+    public ByteBuffer[] getKeys() {
+        ByteBuffer[] copy = new ByteBuffer[keys.length];
+        System.arraycopy(keys, 0, copy, 0, keys.length);
+        return copy;
+    }
+
+     // test only
+    public ByteBuffer[] getValues() {
+        ByteBuffer[] copy = new ByteBuffer[values.length];
+        System.arraycopy(values, 0, copy, 0, values.length);
+        return copy;
     }
 
 }

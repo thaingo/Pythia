@@ -53,33 +53,30 @@ public class ProductionTest {
 
     @Test
     public void testHasSymbol() {
-        IGrammar grammar = new LL1Grammar();
         Production p1 = new Production(
-                grammar.KEY_COLUMNFAMILY, grammar.KEY_USE);
+                Terminal.KEY_COLUMNFAMILY, Terminal.KEY_USE);
 
-        assertTrue(p1.hasSymbol(grammar.KEY_USE));
-        assertFalse(p1.hasSymbol(grammar.KEY_CREATE));
+        assertTrue(p1.hasSymbol(Terminal.KEY_USE));
+        assertFalse(p1.hasSymbol(Terminal.KEY_CREATE));
     }
 
     @Test
     public void testNextSymbol() {
-        IGrammar grammar = new LL1Grammar();
         Production p1 = new Production(
-                grammar.KEY_COLUMNFAMILY, grammar.KEY_USE);
+                Terminal.KEY_COLUMNFAMILY, Terminal.KEY_USE);
 
-        assertEquals(-1, p1.nextSymbol(grammar.KEY_USE));
+        assertEquals(null, p1.nextSymbol(Terminal.KEY_USE));
         assertEquals(
-                grammar.KEY_USE, p1.nextSymbol(grammar.KEY_COLUMNFAMILY));
+                Terminal.KEY_USE, p1.nextSymbol(Terminal.KEY_COLUMNFAMILY));
     }
 
     @Test
     public void testEquals() {
-        IGrammar grammar = new LL1Grammar();
         Production p1 = new Production(
-                grammar.KEY_COLUMNFAMILY, grammar.KEY_USE);
+                Terminal.KEY_COLUMNFAMILY, Terminal.KEY_USE);
         Production p2 = new Production(
-                grammar.KEY_COLUMNFAMILY, grammar.KEY_USE);
-        Production p3 = new Production(grammar.KEY_COLUMNFAMILY);
+                Terminal.KEY_COLUMNFAMILY, Terminal.KEY_USE);
+        Production p3 = new Production(Terminal.KEY_COLUMNFAMILY);
 
         assertTrue(p1.equals(p2));
         assertTrue(p1.equals(p1));

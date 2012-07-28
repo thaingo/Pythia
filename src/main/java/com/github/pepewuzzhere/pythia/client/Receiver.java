@@ -36,7 +36,7 @@ import java.net.Socket;
  * @version %I%, %G%
  * @since 1.0
  */
-public class Receiver extends Thread {
+class Receiver extends Thread {
 
     private final Socket socket;
     private final BufferedReader in;
@@ -44,15 +44,19 @@ public class Receiver extends Thread {
     /**
      * Creates receiver and sets this to daemon.
      *
-     * @param socket Socket connected to server.
-     * @throws IOException
+     * @param socket socket connected to server.
+     * @throws IOException if something is wrong with {@link InputStreamReader}
+     *                     creation from socket inut stream
      */
-    public Receiver(final Socket socket) throws IOException {
+    Receiver(final Socket socket) throws IOException {
         this.socket = socket;
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         setDaemon(true);
     }
 
+    /**
+     * Reads data that are send from server.
+     */
     @Override
     public void run() {
         String response;

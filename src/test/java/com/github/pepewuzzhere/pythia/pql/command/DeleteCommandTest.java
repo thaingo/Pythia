@@ -26,10 +26,8 @@ package com.github.pepewuzzhere.pythia.pql.command;
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.ColumnFamily;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.Row;
 import java.nio.ByteBuffer;
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -78,14 +76,15 @@ public class DeleteCommandTest {
 
     @Test
     public void testExecuteIfColumnFamilyNotExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer rowKey = ByteBuffer.wrap("Piotr".getBytes());
 
         IDBCommand command = new DeleteCommand("Users", "Test", rowKey);
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
-            command.execute(new HashMapDataModel());
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -95,16 +94,17 @@ public class DeleteCommandTest {
 
     @Test
     public void testExecuteIfRowNotExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer rowKey = ByteBuffer.wrap("Piotr".getBytes());
 
         IDBCommand command = new DeleteCommand("Users", "Test", rowKey);
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
-                       .addColumnFamily("Users", new ColumnFamily());
-            command.execute(new HashMapDataModel());
+                       .addColumnFamily("Users", model.createColumnFamily());
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -114,16 +114,17 @@ public class DeleteCommandTest {
 
     @Test
     public void testExecuteIfRowExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer rowKey = ByteBuffer.wrap("Piotr".getBytes());
 
         IDBCommand command = new DeleteCommand("Users", "Test", rowKey);
 
-        IColumnFamily columnFamily = new ColumnFamily();
+        IColumnFamily columnFamily = model.createColumnFamily();
 
         try {
-            columnFamily.addRow(new Row(rowKey));
+            columnFamily.addRow(model.createRow(rowKey));
 
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
                        .addColumnFamily("Users", columnFamily);
 

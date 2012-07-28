@@ -37,23 +37,23 @@ import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
  */
 public class UseKeySpaceCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of keyspace to use
      */
-    public final String name;
+    private final String name;
 
-    /**
+    /*
      * Actual user context
      */
-    public final Context ctx;
+    private final Context ctx;
 
     /**
      * Sets all parameters used to using keyspace.
      *
-     * @param name Name of keyspace
-     * @param ctx Context of execution
+     * @param name name of keyspace
+     * @param ctx context of execution
      */
-    public UseKeySpaceCommand(String name, Context ctx) {
+    public UseKeySpaceCommand(final String name, final Context ctx) {
         this.name = name;
         this.ctx = ctx;
     }
@@ -62,13 +62,23 @@ public class UseKeySpaceCommand implements IDBCommand {
      * Creates keyspace from this command parameters.
      *
      * @param model <code>IDataModel</code> implementation
-     * @return Actual keyspace object
-     * @throws PythiaException
+     * @return actual keyspace object
+     * @throws PythiaException if there is a problem with using new keyspace
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
+    public Object execute(final IDataModel model) throws PythiaException {
         ctx.setActualKeySpace(name);
         return null;
+    }
+
+    // test only
+    public String getName() {
+        return name;
+    }
+
+    // test only
+    public boolean hasContext() {
+        return ctx != null;
     }
 
 }

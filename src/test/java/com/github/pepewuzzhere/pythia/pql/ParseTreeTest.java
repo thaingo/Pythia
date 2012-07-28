@@ -23,7 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.pql;
 
-import java.util.ArrayList;
+import java.util.List;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -62,25 +62,33 @@ public class ParseTreeTest {
             new Token(TokenType.RPAREN)
         };
 
-        ParseTree root = new ParseTree(tokens[0]);
-        assertEquals(tokens[0], root.getSymbol());
+        ParseTree root = new ParseTree(Terminal.SYMBOL_LPAREN, tokens[0]);
+        assertEquals(tokens[0], root.getToken());
+        assertEquals(Terminal.SYMBOL_LPAREN, root.getSymbol());
 
-        root.add(tokens[1], tokens[2]);
+        root.add(
+            new ParseTree(Terminal.KEY_KEY, tokens[1]),
+            new ParseTree(Terminal.SYMBOL_COMMA, tokens[2])
+        );
 
-        ArrayList<ParseTree> childrens = root.getChildrens();
-        assertEquals(childrens.get(0).getSymbol(), tokens[1]);
-        assertEquals(childrens.get(1).getSymbol(), tokens[2]);
+        List<ParseTree> childrens = root.getChildrens();
+        assertEquals(childrens.get(0).getToken(), tokens[1]);
+        assertEquals(childrens.get(0).getSymbol(), Terminal.KEY_KEY);
+        assertEquals(childrens.get(1).getToken(), tokens[2]);
+        assertEquals(childrens.get(1).getSymbol(), Terminal.SYMBOL_COMMA);
     }
 
     @Test
     public void testEquals() {
-        ParseTree p1 = new ParseTree(new Token(TokenType.LPAREN));
-        p1.add(new Token(TokenType.RPAREN));
+        ParseTree p1 = new ParseTree(
+                Terminal.SYMBOL_LPAREN, new Token(TokenType.LPAREN));
+        p1.add(Terminal.SYMBOL_RPAREN, new Token(TokenType.RPAREN));
+        ParseTree p2 = new ParseTree(
+                Terminal.SYMBOL_LPAREN, new Token(TokenType.LPAREN));
+        p2.add(Terminal.SYMBOL_RPAREN, new Token(TokenType.RPAREN));
 
-        ParseTree p2 = new ParseTree(new Token(TokenType.LPAREN));
-        p2.add(new Token(TokenType.RPAREN));
-
-        ParseTree p3 = new ParseTree(new Token(TokenType.LPAREN));
+        ParseTree p3 = new ParseTree(
+            Terminal.SYMBOL_RPAREN, new Token(TokenType.LPAREN));
 
         assertTrue(p1.equals(p2));
         assertTrue(p1.equals(p1));

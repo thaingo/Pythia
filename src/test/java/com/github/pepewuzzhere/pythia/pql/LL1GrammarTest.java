@@ -56,11 +56,11 @@ public class LL1GrammarTest {
     @Test
     public void testGetProductions() throws PythiaException {
         IGrammar grammar = new LL1Grammar();
-        int[] productions = grammar.getGrammar();
+        ISymbol[] productions = grammar.getGrammar();
 
         for (int i = 0; i < productions.length; ++i) {
-            NonTerminal production =
-                    (NonTerminal)grammar.getSymbol(productions[i]);
+            LL1Grammar.NonTerminal production =
+                    (LL1Grammar.NonTerminal)productions[i];
             assertFalse(production.isTerminal());
         }
     }
@@ -68,14 +68,14 @@ public class LL1GrammarTest {
     @Test
     public void testGetSymbolsWith() throws PythiaException {
         LL1Grammar grammar = new LL1Grammar();
-        Integer[] with = grammar.getSymbolsWith(grammar.WHERE);
+        ISymbol[] with = grammar.getSymbolsWith(LL1Grammar.NonTerminal.WHERE);
 
         assertTrue(
             ifSameValuesArrays(
                 with,
-                new Integer[] {
-                    grammar.STMT_DELETE,
-                    grammar.STMT_SELECT
+                new ISymbol[] {
+                    LL1Grammar.NonTerminal.STMT_DELETE,
+                    LL1Grammar.NonTerminal.STMT_SELECT
 
                 }
             )

@@ -23,8 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.pql;
 
-import com.github.pepewuzzhere.pythia.PythiaException;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
 /**
@@ -53,72 +52,33 @@ public class IGrammarTest {
     }
 
     @Test
-    public void testIsTerminal() {
-        IGrammar instance = new IGrammarImpl();
-        try {
-            assertTrue(instance.isTerminal(instance.KEY_CREATE));
-        } catch (PythiaException e) {
-            fail(e.getMessage());
-        }
-
-        boolean wasThrown = false;
-        try {
-            instance.isTerminal(-1);
-        } catch (PythiaException e) {
-            wasThrown = true;
-        }
-        assertTrue(wasThrown);
-    }
-
-    @Test
-    public void testGetSymbol() {
-        IGrammar instance = new IGrammarImpl();
-        try {
-            assertEquals(
-                instance.getSymbol(instance.KEY_CREATE),
-                new Token(TokenType.KEYWORD, "CREATE")
-             );
-        } catch (PythiaException e) {
-            fail(e.getMessage());
-        }
-
-        boolean wasThrown = false;
-        try {
-            instance.getSymbol(-1);
-        } catch (PythiaException e) {
-            wasThrown = true;
-        }
-        assertTrue(wasThrown);
-    }
-
-    @Test
     public void testGetCode() {
         IGrammar instance = new IGrammarImpl();
 
         assertEquals(
-            instance.getCode(new Token(TokenType.KEYWORD, "CREATE")),
-            instance.KEY_CREATE
+            Terminal.KEY_CREATE,
+            instance.getCode(new Token(TokenType.KEYWORD, "CREATE"))
         );
         assertEquals(
-            instance.getCode(new Token(TokenType.VARIABLE, "Test")),
-            instance.VAR
+            Terminal.VAR,
+            instance.getCode(new Token(TokenType.VARIABLE, "Test"))
         );
         assertEquals(
             instance.getCode(new Token(TokenType.KEYWORD, "ABCD")),
-            -1
+            null
         );
     }
 
     private class IGrammarImpl extends IGrammar {
 
         @Override
-        public int[] getGrammar() {
-            return null;
+        public ISymbol[] getGrammar() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Integer[] getSymbolsWith(int symbol) {
-            return null;
+        public ISymbol[] getSymbolsWith(ISymbol symbol) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

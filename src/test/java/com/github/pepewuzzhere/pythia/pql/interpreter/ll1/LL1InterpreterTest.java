@@ -23,10 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.command.IDBCommand;
 import static org.junit.Assert.assertTrue;
 import org.junit.*;
@@ -58,19 +55,23 @@ public class LL1InterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
-        ParseTree node = new ParseTree(grammar.getSymbol(grammar.STMT_START));
+        ParseTree node = new ParseTree(LL1Grammar.NonTerminal.STMT_START, null);
         ParseTree stmt = new ParseTree(
-                grammar.getSymbol(grammar.STMT_CREATE_KEYSPACE));
+                LL1Grammar.NonTerminal.STMT_CREATE_KEYSPACE, null);
         node.add(stmt);
         stmt.add(
-            new Token(TokenType.KEYWORD, "KEYSPACE"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_KEYSPACE,
+                new Token(TokenType.KEYWORD, "KEYSPACE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test")
+            )
         );
 
         LL1Interpreter interpreter = new LL1Interpreter();
-        IDBCommand command =
-                (IDBCommand)interpreter.interpret(grammar, node, null);
+        IDBCommand command = (IDBCommand)interpreter.interpret(node, null);
 
         assertTrue(command instanceof IDBCommand);
     }

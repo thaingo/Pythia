@@ -21,16 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia;
 
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 /**
- * Singleton represents Pythia database instance. Has keyspaces map and it is
- * root of data model tree.
+ * Singleton represents Pythia database instance.
+ *
+ * Consists of keyspaces map and it is root of data model tree.
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
@@ -43,29 +44,18 @@ public enum DB {
      */
     INSTANCE;
 
-    /**
+    /*
      * Keyspaces list
      */
-    public final Map<String, IKeySpace> keySpaces = new HashMap<>();
-
-    /**
-     * Stack with keyspaces to delete
-     */
-    public final Stack<String> keyspaceToDelete = new Stack<>();
-
-    /**
-     * List of column families to delete
-     */
-    public final Map<String, Stack<String>> columnFamilyToDelete =
-            new HashMap<>();
+    private final Map<String, IKeySpace> keySpaces = new HashMap<>();
 
     /**
      * Adds new keyspace with unique name or throws exception.
      *
-     * @param keySpace KeySpace to add
-     * @throws PythiaException
+     * @param keySpace keyspace to add
+     * @throws PythiaException if keyspace already exists
      */
-    public synchronized void addKeySpace(IKeySpace keySpace)
+    public void addKeySpace(final IKeySpace keySpace)
             throws PythiaException
     {
         if (keySpaces.containsKey(keySpace.getName())) {
@@ -78,36 +68,41 @@ public enum DB {
     /**
      * Gets keyspace by name.
      *
-     * @param name Name of keyspace
-     * @return Keyspace with provided name or null
+     * @param name name of keyspace
+     * @return keyspace with provided name or null
      */
-    public synchronized IKeySpace getKeySpace(String name) {
+    public IKeySpace getKeySpace(final String name) {
         return keySpaces.get(name);
     }
 
     /**
-     * Drop keyspace with providen name. Throws exception if keyspace don't
-     * exists.
+     * Drop keyspace with providen name.
      *
-     * @param name Name of keyspace
-     * @throws PythiaException
+     * @param name name of keyspace
+     * @throws PythiaException if keyspace doesn't exists.
      */
-    public synchronized void dropKeySpace(String name) throws PythiaException {
+    public void dropKeySpace(final String name) throws PythiaException {
         if (keySpaces.containsKey(name)) {
             keySpaces.remove(name);
-            keyspaceToDelete.push(name);
         } else {
             throw new PythiaException(PythiaError.DATA_NOT_FOUND);
         }
     }
 
     /**
-     * Clears all keyspaces - used only for testing purposes.
+     * Returns list of actual keyspaces.
+     *
+     * @return list of actual keyspaces.
      */
-    public synchronized void dropDB() {
+    public Map<String, IKeySpace> getKeySpaces() {
+        return new HashMap<>(keySpaces);
+    }
+
+    /**
+     * Clears all cached data - use only for testing purposes!
+     */
+    public void dropDB() {
         keySpaces.clear();
-        keyspaceToDelete.clear();
-        columnFamilyToDelete.clear();
     }
 
 }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
@@ -36,17 +37,17 @@ import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
  */
 public class CreateKeySpaceCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of this keyspace
      */
-    public final String name;
+    private final String name;
 
     /**
      * Sets all parameters used to creating keyspace.
      *
-     * @param name Name of keyspace
+     * @param name name of keyspace
      */
-    public CreateKeySpaceCommand(String name) {
+    public CreateKeySpaceCommand(final String name) {
         this.name = name;
     }
 
@@ -54,12 +55,17 @@ public class CreateKeySpaceCommand implements IDBCommand {
      * Creates keyspace from this command parameters.
      *
      * @param model <code>IDataModel</code> implementation
-     * @throws PythiaException
+     * @throws PythiaException if there is a problem with keyspace creation
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
+    public Object execute(final IDataModel model) throws PythiaException {
         DB.INSTANCE.addKeySpace(model.createKeySpace(name));
         return null;
+    }
+
+    // test only
+    public String getName() {
+        return name;
     }
 
 }

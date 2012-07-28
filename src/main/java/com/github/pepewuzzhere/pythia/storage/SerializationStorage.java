@@ -29,15 +29,18 @@ import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import java.io.*;
-import java.util.Iterator;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 
 /**
- * Implementation of storage using object serialization. Data are written using
- * this routines:
+ * Implementation of storage using object serialization.
+ *
+ * Data are written using this routines:
  *  - every keyspace has own folder
  *  - column family is written as serialized object to file
  *
@@ -48,17 +51,17 @@ import java.util.Stack;
 public class SerializationStorage implements IStorage {
 
     @Override
-    public void read(String root, IDataModel model)
+    public void read(final String root, final IDataModel model)
             throws IOException, PythiaException
     {
-        File db = new File(root);
+        final File db = new File(root);
         if (db != null && db.exists()) {
             for (File f : db.listFiles()) {
                 if (f != null && f.isDirectory()) {
                     DB.INSTANCE.addKeySpace(model.createKeySpace(f.getName()));
                     for (File cf : f.listFiles()) {
                         try (
-                            ObjectInputStream in = new ObjectInputStream(
+                            final ObjectInputStream in = new ObjectInputStream(
                                 new FileInputStream(cf))
                         ) {
                             try {
@@ -78,37 +81,28 @@ public class SerializationStorage implements IStorage {
     }
 
     @Override
-    public synchronized void write(String root) throws IOException {
+    public void write(final String root) throws IOException {
+
+        final Map<String, IKeySpace> keySpaces = DB.INSTANCE.getKeySpaces();
 
         // foreach keyspace
-        Set<Map.Entry<String, IKeySpace>> keyspaces =
-                DB.INSTANCE.keySpaces.entrySet();
-        for (
-            Iterator<Map.Entry<String, IKeySpace>> it = keyspaces.iterator();
-            it.hasNext();
-        ) {
-            Map.Entry<String, IKeySpace> k = it.next();
-            IKeySpace keyspace = k.getValue();
+        for (Map.Entry<String, IKeySpace> k :  keySpaces.entrySet()) {
+            final IKeySpace keyspace = k.getValue();
             // create folder if needed
             if (keyspace.isDirty()) {
-                File dir = new File(root + "/" + k.getKey());
+                final File dir = new File(root + "/" + k.getKey());
                 dir.mkdirs();
                 keyspace.setClean();
             }
 
             // foreach column family in keyspace
-            Set<Map.Entry<String, IColumnFamily>> columnfamilies =
-                keyspace.getColumnFamilies().entrySet();
-            for (
-                Iterator<Map.Entry<String, IColumnFamily>> it2 =
-                        columnfamilies.iterator();
-                it2.hasNext();
+            for (Map.Entry<String, IColumnFamily> c :
+                    keyspace.getColumnFamilies().entrySet()
             ) {
-                Map.Entry<String, IColumnFamily> c = it2.next();
-                IColumnFamily columnfamily = c.getValue();
+                final IColumnFamily columnfamily = c.getValue();
                 // save to disc if needed
                 if (columnfamily.isDirty()) {
-                    try (ObjectOutputStream out =
+                    try (final ObjectOutputStream out =
                             new ObjectOutputStream(
                                 new FileOutputStream(
                                     root + "/" + k.getKey() + "/" + c.getKey()
@@ -123,24 +117,39 @@ public class SerializationStorage implements IStorage {
                 }
             }
 
+            Map<String, IColumnFamily> columnFamilies =
+                    keyspace.getColumnFamilies();
+
             // delete column families
-            Stack<String> cfToDel =
-                    DB.INSTANCE.columnFamilyToDelete.get(k.getKey());
-            if (cfToDel != null) {
-                while (!cfToDel.isEmpty()) {
-                    doDelete(new File(
-                            root + "/" + k.getKey() + "/" + cfToDel.pop()));
+            final File path = new File(root + "/" + k.getKey());
+            for (File child : path.listFiles()) {
+                if (!columnFamilies.containsKey(child.getName())
+                ) {
+                    doDelete(
+                        new File(
+                            root + "/" + k.getKey() + "/" + child.getName()
+                        )
+                    );
                 }
             }
+
         }
 
         // delete keyspaces
-        while (!DB.INSTANCE.keyspaceToDelete.isEmpty()) {
-            doDelete(new File(root + "/" + DB.INSTANCE.keyspaceToDelete.pop()));
+        final File path = new File(root);
+        for (File child : path.listFiles()) {
+            if (child.isDirectory()
+                && !keySpaces.containsKey(child.getName())
+            ) {
+                doDelete(
+                    new File(root + "/" + child.getName())
+                );
+            }
         }
+
     }
 
-    private void doDelete(File path) throws IOException {
+    private void doDelete(final File path) throws IOException {
         if (path.isDirectory()) {
             for (File child : path.listFiles()) {
                 doDelete(child);

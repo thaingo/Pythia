@@ -21,14 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 
 /**
- * Interface for commands executed on Pythia database. It is based on Command
- * design pattern.
+ * Interface for commands executed on Pythia database.
+ *
+ * It is based on Command design pattern.
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
@@ -37,12 +39,13 @@ import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 public interface IDBCommand {
 
     /**
-     * Executes this command. Is should be simple command operating on provied
-     * data model.
+     * Executes this command.
+     *
+     * Is should be simple command operating on provied data model.
      *
      * @param model <code>IDataModel</code> implementation.
-     * @return Result of command execution or null
-     * @throws PythiaException
+     * @return result of command execution or null
+     * @throws PythiaException if something wrong with command execution
      */
-    Object execute(IDataModel model) throws PythiaException;
+    Object execute(final IDataModel model) throws PythiaException;
 }

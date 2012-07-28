@@ -27,10 +27,11 @@ import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumn;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.*;
 import java.nio.ByteBuffer;
-import static org.junit.Assert.*;
 import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -80,6 +81,7 @@ public class UpdateCommandTest {
 
     @Test
     public void testInvalidArgumentList() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer[] keys = new ByteBuffer[] {
             ByteBuffer.wrap("Name".getBytes())
         };
@@ -92,8 +94,8 @@ public class UpdateCommandTest {
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
-            command.execute(new HashMapDataModel());
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -103,6 +105,7 @@ public class UpdateCommandTest {
 
     @Test
     public void testExecuteIfColumnFamilyNotExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer[] keys = new ByteBuffer[] {
             ByteBuffer.wrap("Name".getBytes())
         };
@@ -117,8 +120,8 @@ public class UpdateCommandTest {
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
-            command.execute(new HashMapDataModel());
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -128,6 +131,7 @@ public class UpdateCommandTest {
 
     @Test
     public void testExecuteIfRowNotExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer[] keys = new ByteBuffer[] {
             ByteBuffer.wrap("Name".getBytes())
         };
@@ -142,10 +146,10 @@ public class UpdateCommandTest {
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
-                       .addColumnFamily("Users", new ColumnFamily());
-            command.execute(new HashMapDataModel());
+                       .addColumnFamily("Users", model.createColumnFamily());
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -155,6 +159,7 @@ public class UpdateCommandTest {
 
     @Test
     public void testExecuteIfRowExists() {
+        IDataModel model = new HashMapDataModel();
         ByteBuffer[] keys = new ByteBuffer[] {
             ByteBuffer.wrap("Name".getBytes()),
             ByteBuffer.wrap("Surname".getBytes())
@@ -168,14 +173,14 @@ public class UpdateCommandTest {
         IDBCommand command = new UpdateCommand(
             "Users", "Test", rowKey, keys, values
         );
-        IColumnFamily columnFamily = new ColumnFamily();
-        IColumn column = new Column(keys[0]);
+        IColumnFamily columnFamily = model.createColumnFamily();
+        IColumn column = model.createColumn(keys[0]);
 
         try {
-            columnFamily.addRow(new Row(rowKey));
+            columnFamily.addRow(model.createRow(rowKey));
             columnFamily.getRow(rowKey).addColumn(column);
 
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
                        .addColumnFamily("Users", columnFamily);
 
@@ -188,7 +193,7 @@ public class UpdateCommandTest {
                 null
             );
 
-            command.execute(new HashMapDataModel());
+            command.execute(model);
         } catch(PythiaException e) {
             fail(e.getMessage());
         }

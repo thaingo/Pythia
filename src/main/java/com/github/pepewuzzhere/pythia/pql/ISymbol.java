@@ -36,15 +36,7 @@ public interface ISymbol {
 
     /**
      * Checks if symbol is terminal.
-     * @return True if terminal, false otherwise
+     * @return true if terminal symbol, false otherwise
      */
     boolean isTerminal();
-
-    /**
-     * Checks if this symbol is grammatically equals with providen.
-     *
-     * @param symbol Symbol to compare
-     * @return True if symbol is grammatically equal, false otherwise
-     */
-    boolean grammarEquals(ISymbol symbol);
 }

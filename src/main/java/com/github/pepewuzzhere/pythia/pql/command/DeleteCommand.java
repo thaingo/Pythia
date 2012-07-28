@@ -40,30 +40,31 @@ import java.nio.ByteBuffer;
  */
 public class DeleteCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of column family of deleted row
      */
-    public final String columnFamily;
+    private final String columnFamily;
 
-    /**
+    /*
      * Name of keyspace of deleted row
      */
-    public final String keySpace;
+    private final String keySpace;
 
-    /**
+    /*
      * Key of deleted row
      */
-    public final ByteBuffer rowKey;
+    private final ByteBuffer rowKey;
 
     /**
      * Sets all parameters used to delete existing row from column family.
      *
-     * @param columnFamily Name of column family
-     * @param keySpace Used keyspace
-     * @param rowKey Key of updated row
+     * @param columnFamily name of column family
+     * @param keySpace used keyspace
+     * @param rowKey key of updated row
      */
     public DeleteCommand(
-            String columnFamily, String keySpace, ByteBuffer rowKey
+        final String columnFamily, final String keySpace,
+        final ByteBuffer rowKey
     ) {
         this.columnFamily = columnFamily;
         this.keySpace     = keySpace;
@@ -74,12 +75,12 @@ public class DeleteCommand implements IDBCommand {
      * Deletes existing row from column family.
      *
      * @param model <code>IDataModel</code> implementation
-     * @throws PythiaException
+     * @throws PythiaException if there is a problem with row deleting
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
+    public Object execute(final IDataModel model) throws PythiaException {
 
-        IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
+        final IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
 
         // keyspace check
         if (space != null) {
@@ -95,5 +96,20 @@ public class DeleteCommand implements IDBCommand {
             throw new PythiaException(PythiaError.DATA_NOT_FOUND);
         }
         return null;
+    }
+
+    // test only
+    public String getKeySpace() {
+        return keySpace;
+    }
+
+    // test only
+    public String getColumnFamily() {
+        return columnFamily;
+    }
+
+    // test only
+    public ByteBuffer getRowKey() {
+        return ByteBuffer.wrap(rowKey.array().clone());
     }
 }

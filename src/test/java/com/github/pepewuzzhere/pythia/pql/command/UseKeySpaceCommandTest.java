@@ -26,11 +26,12 @@ package com.github.pepewuzzhere.pythia.pql.command;
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
+import org.junit.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import org.junit.*;
 
 /**
  *
@@ -60,8 +61,9 @@ public class UseKeySpaceCommandTest {
 
     @Test
     public void testExecute() {
+        IDataModel model = new HashMapDataModel();
         try {
-            IKeySpace keySpace = new KeySpace("Test");
+            IKeySpace keySpace = model.createKeySpace("Test");
             Context ctx = new Context();
             DB.INSTANCE.addKeySpace(keySpace);
             IDBCommand command = new UseKeySpaceCommand("Test", ctx);

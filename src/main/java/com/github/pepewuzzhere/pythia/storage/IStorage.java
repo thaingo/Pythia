@@ -29,8 +29,9 @@ import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import java.io.IOException;
 
 /**
- * Interface for storage class implementations. Used to read/write Pythia
- * data base data to disc.
+ * Interface for storage class implementations.
+ *
+ * Used to read/write Pythia data base data to disc.
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
@@ -41,19 +42,19 @@ public interface IStorage {
     /**
      * Read data from disc to memory.
      *
-     * @param root Directory root for pythia data.
-     * @param model Data model to read data.
-     * @throws IOException
-     * @throws PythiaException
+     * @param root directory root for pythia data
+     * @param model data model to read data
+     * @throws IOException if something is wrong with i/o
+     * @throws PythiaException if there is problem with deserialization
      */
-    void read(String root, IDataModel model)
+    void read(final String root, final IDataModel model)
             throws IOException, PythiaException;
 
     /**
      * Write data from disc to memory.
      *
-     * @param root Directory root for pythia data.
-     * @throws IOException
+     * @param root directory root for pythia data.
+     * @throws IOException if something is wrong with i/o
      */
-    void write(String root) throws IOException;
+    void write(final String root) throws IOException;
 }

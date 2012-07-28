@@ -23,10 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.command.CreateKeySpaceCommand;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import static org.junit.Assert.assertEquals;
@@ -59,19 +56,23 @@ public class CreateKeySpaceInterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
         ParseTree stmt = new ParseTree(
-                grammar.getSymbol(grammar.STMT_CREATE_KEYSPACE));
+                LL1Grammar.NonTerminal.STMT_CREATE_KEYSPACE, null);
         stmt.add(
-            new Token(TokenType.KEYWORD, "KEYSPACE"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_KEYSPACE,
+                new Token(TokenType.KEYWORD, "KEYSPACE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test")
+            )
         );
 
         IInterpreter interpreter = new CreateKeySpaceInterpreter();
         CreateKeySpaceCommand cmd =
-                (CreateKeySpaceCommand)
-                interpreter.interpret(grammar, stmt, null);
+                (CreateKeySpaceCommand)interpreter.interpret(stmt, null);
 
-        assertEquals(cmd.name, "Test");
+        assertEquals(cmd.getName(), "Test");
     }
 }

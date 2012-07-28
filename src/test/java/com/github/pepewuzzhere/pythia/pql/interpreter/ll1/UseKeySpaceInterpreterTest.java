@@ -24,13 +24,11 @@
 package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
 import com.github.pepewuzzhere.pythia.Context;
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.command.UseKeySpaceCommand;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import org.junit.*;
 
@@ -61,20 +59,25 @@ public class UseKeySpaceInterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
-        ParseTree stmt = new ParseTree(
-                grammar.getSymbol(grammar.STMT_USE_KEYSPACE));
+        ParseTree stmt =
+                new ParseTree(LL1Grammar.NonTerminal.STMT_USE_KEYSPACE, null);
         stmt.add(
-            new Token(TokenType.KEYWORD, "USE"),
-            new Token(TokenType.VARIABLE, "Test")
+            new ParseTree(
+                Terminal.KEY_USE,
+                new Token(TokenType.KEYWORD, "USE")
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Test")
+            )
         );
 
         IInterpreter interpreter = new UseKeySpaceInterpreter();
         UseKeySpaceCommand cmd =
-                (UseKeySpaceCommand)
-                interpreter.interpret(grammar, stmt, new Context());
+                (UseKeySpaceCommand) interpreter.interpret(stmt, new Context());
 
-        assertEquals(cmd.name, "Test");
-        assertNotNull(cmd.ctx);
+        assertEquals(cmd.getName(), "Test");
+        assertTrue(cmd.hasContext());
     }
+
 }

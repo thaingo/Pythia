@@ -29,6 +29,8 @@ import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
 /**
  * User context - storage of individual user data.
  *
+ * Every user thread has own context.
+ *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
  * @since 1.0
@@ -40,12 +42,15 @@ public class Context {
     /**
      * Sets actual keyspace whitch is used by other commands.
      *
-     * @param name Name of actual keyspace
+     * @param name name of actual keyspace
      * @return Object that represents actual keyspace.
-     * @throws PythiaException 
+     * @throws PythiaException if keyspace doesn't exists
      */
-    public IKeySpace setActualKeySpace(String name) throws PythiaException {
-        IKeySpace keySpace = DB.INSTANCE.getKeySpace(name);
+    public IKeySpace setActualKeySpace(final String name)
+            throws PythiaException
+    {
+        final IKeySpace keySpace;
+        keySpace = DB.INSTANCE.getKeySpace(name);
         if (keySpace != null) {
             actualKeySpace = keySpace;
             return keySpace;
@@ -55,9 +60,9 @@ public class Context {
     }
 
     /**
-     * Gets actual keyspace.
+     * Gets actual keyspace or null if not exists.
      *
-     * @return Keyspace
+     * @return actual keyspace or null if not exists.
      */
     public IKeySpace getActualKeySpace() {
         return actualKeySpace;

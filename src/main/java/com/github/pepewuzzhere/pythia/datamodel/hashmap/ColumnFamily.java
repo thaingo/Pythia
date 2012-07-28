@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.datamodel.hashmap;
 
 import com.github.pepewuzzhere.pythia.PythiaError;
@@ -28,8 +29,10 @@ import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumn;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.IRow;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -40,11 +43,11 @@ import java.util.Objects;
  * @version %I%, %G%
  * @since 1.0
  */
-public class ColumnFamily implements IColumnFamily {
+class ColumnFamily implements IColumnFamily, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private HashMap<ByteArrayWrapper, IRow> rows = new HashMap<>();
+    private final Map<ByteArrayWrapper, IRow> rows = new HashMap<>();
     private boolean isDirty;
 
     /**
@@ -56,7 +59,7 @@ public class ColumnFamily implements IColumnFamily {
     }
 
     @Override
-    public void addRow(IRow row) throws PythiaException {
+    public void addRow(final IRow row) throws PythiaException {
         if (rows.containsKey(toKey(row.getKey()))) {
             throw new PythiaException(PythiaError.KEY_ALREADY_EXISTS);
         } else {
@@ -72,7 +75,8 @@ public class ColumnFamily implements IColumnFamily {
 
     @Override
     public void updateRow(
-            ByteBuffer key, ByteBuffer columnKey, ByteBuffer columnValue
+        final ByteBuffer key, final ByteBuffer columnKey,
+        final ByteBuffer columnValue
     ) throws PythiaException {
         if (rows.containsKey(toKey(key))) {
             final IColumn col = rows.get(toKey(key)).getColumn(columnKey);
@@ -88,7 +92,7 @@ public class ColumnFamily implements IColumnFamily {
     }
 
     @Override
-    public void deleteRow(ByteBuffer key) throws PythiaException {
+    public void deleteRow(final ByteBuffer key) throws PythiaException {
         if (rows.containsKey(toKey(key))) {
             rows.remove(toKey(key));
         } else {
@@ -115,7 +119,7 @@ public class ColumnFamily implements IColumnFamily {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ColumnFamily) {
-            ColumnFamily c = (ColumnFamily)obj;
+            final ColumnFamily c = (ColumnFamily)obj;
 
             return rows.equals(c.getRows());
         } else {
@@ -130,16 +134,24 @@ public class ColumnFamily implements IColumnFamily {
         return hash;
     }
 
-    /**
+    /*
      * Gets row list of this column family.
      *
-     * @return
+     * @return list of column family rows
      */
-    protected HashMap<ByteArrayWrapper, IRow> getRows() {
-        return rows;
+    Map<ByteArrayWrapper, IRow> getRows() {
+        return new HashMap<>(rows);
     }
 
-    private ByteArrayWrapper toKey(ByteBuffer buffer) {
+    /*
+     * Wraps {@link ByteBuffer} in {@link ByteArrayWrapper}.
+     *
+     * Used to serialize and compare {@link ByteBuffer}
+     *
+     * @param buffer {@link ByteBuffer} to wrap
+     * @return wrapped buffer
+     */
+    private ByteArrayWrapper toKey(final ByteBuffer buffer) {
         return new ByteArrayWrapper(buffer.array());
     }
 

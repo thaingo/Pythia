@@ -25,8 +25,8 @@ package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -58,11 +58,12 @@ public class DropKeySpaceCommandTest {
 
     @Test
     public void testExecuteIfKeySpaceExists() {
+        IDataModel model = new HashMapDataModel();
         IDBCommand command = new DropKeySpaceCommand("Test");
 
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
-            command.execute(new HashMapDataModel());
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
+            command.execute(model);
         } catch(PythiaException e) {
             fail(e.getMessage());
         }

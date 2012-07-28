@@ -23,10 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
@@ -58,17 +55,28 @@ public class WhereInterpreterTest {
 
     @Test
     public void testInterpret() throws Exception {
-        LL1Grammar grammar = new LL1Grammar();
-        ParseTree where = new ParseTree(grammar.getSymbol(grammar.WHERE));
+        ParseTree where = new ParseTree(LL1Grammar.NonTerminal.WHERE, null);
         where.add(
-            new Token(TokenType.KEYWORD, "WHERE"),
-            new Token(TokenType.KEYWORD, "KEY"),
-            new Token(TokenType.EQUAL),
-            new Token(TokenType.VARIABLE, "pepe")
+            new ParseTree(
+                Terminal.KEY_WHERE,
+                new Token(TokenType.KEYWORD, "WHERE")
+            ),
+            new ParseTree(
+                Terminal.KEY_KEY,
+                new Token(TokenType.KEYWORD, "KEY")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "pepe")
+            )
         );
 
         IInterpreter interpreter = new WhereInterpreter();
-        String key = (String)interpreter.interpret(grammar, where, null);
+        String key = (String)interpreter.interpret(where, null);
 
         assertEquals(key, "pepe");
     }

@@ -32,7 +32,7 @@ import java.util.Objects;
  * @version %I%, %G%
  * @since 1.0
  */
-public class Token implements ISymbol {
+public class Token {
 
     private final TokenType symbol;
     private final String value;
@@ -40,9 +40,9 @@ public class Token implements ISymbol {
     /**
      * Construct token containing only symbol.
      *
-     * @param symbol TokenType of token
+     * @param symbol tokenType of token
      */
-    public Token(TokenType symbol) {
+    public Token(final TokenType symbol) {
         this.symbol = symbol;
         this.value  = null;
     }
@@ -50,10 +50,10 @@ public class Token implements ISymbol {
     /**
      * Construct token containing both symbol and value.
      *
-     * @param symbol TokenType of token
-     * @param value Value of token
+     * @param symbol type of token
+     * @param value value of token
      */
-    public Token(TokenType symbol, String value) {
+    public Token(final TokenType symbol, final String value) {
         this.symbol = symbol;
         this.value  = value;
     }
@@ -61,7 +61,7 @@ public class Token implements ISymbol {
     /**
      * Gets the symbol of token.
      *
-     * @return The symbol of token.
+     * @return the symbol of token.
      */
     public TokenType getSymbol() {
         return symbol;
@@ -70,7 +70,7 @@ public class Token implements ISymbol {
     /**
      * Gets the value of token.
      *
-     * @return The value of token.
+     * @return the value of token.
      */
     public String getValue() {
         return value;
@@ -91,30 +91,6 @@ public class Token implements ISymbol {
         hash = 53 * hash + (this.symbol != null ? this.symbol.hashCode() : 0);
         hash = 53 * hash + Objects.hashCode(this.value);
         return hash;
-    }
-
-    @Override
-    public boolean isTerminal() {
-        return true;
-    }
-
-    @Override
-    public boolean grammarEquals(ISymbol symbol) {
-        if (symbol instanceof Token) {
-            Token t = (Token)symbol;
-            boolean arg2 =
-                    (this.symbol == null ? null == t.getSymbol()
-                                         : this.symbol.equals(t.getSymbol()));
-
-            boolean arg3 = true;
-            if (t.getSymbol() != TokenType.VARIABLE) {
-                arg3 = value == null ? null == t.getValue()
-                                     : value.equals(t.getValue());
-            }
-            return arg2 && arg3;
-        } else {
-            return false;
-        }
     }
 
 }

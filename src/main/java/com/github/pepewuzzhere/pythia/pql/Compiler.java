@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql;
 
 import com.github.pepewuzzhere.pythia.Context;
@@ -45,34 +46,34 @@ public class Compiler {
     /**
      * Create compiler for PQL language.
      *
-     * @param lexer Lexer implementation to use
-     * @param grammar Grammar of PQL to use
+     * @param lexer lexer implementation to use
+     * @param grammar grammar of PQL to use
+     * @throws PythiaException if parser for pql couldn't be created
      */
-    public Compiler(ILexer lexer, IGrammar grammar) {
+    public Compiler(final ILexer lexer, final IGrammar grammar)
+            throws PythiaException
+    {
         this.lexer  = lexer;
         this.grammar = grammar;
-        try {
-            this.parser = ParserFactory.factory(grammar);
-        } catch (PythiaException e) {
-            throw new RuntimeException(e);
-        }
+        this.parser = ParserFactory.factory(grammar);
     }
 
     /**
      * Compile PQL code and return command to execute.
      *
-     * @param command Source to compile
-     * @param ctx Context of execution
-     * @return Command to execute
-     * @throws PythiaException
+     * @param command source to compile
+     * @param ctx context of execution
+     * @return command to execute
+     * @throws PythiaException if there are some compilation error
      */
-    public IDBCommand compile(String command, Context ctx)
+    public IDBCommand compile(final String command, final Context ctx)
             throws PythiaException
     {
         // tokenize - parse - interpret
-        ParseTree node = parser.parse(
+        final ParseTree node = parser.parse(
                 lexer.tokenize(command, new TableDrivenTokenIterator()));
-        IInterpreter interpreter = InterpreterFactory.factory(grammar, node);
-        return (IDBCommand)interpreter.interpret(grammar, node, ctx);
+        final IInterpreter interpreter =
+                InterpreterFactory.factory(grammar, node);
+        return (IDBCommand)interpreter.interpret(node, ctx);
     }
 }

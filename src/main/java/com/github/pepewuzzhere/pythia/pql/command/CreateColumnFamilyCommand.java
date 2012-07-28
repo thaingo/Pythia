@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
@@ -38,24 +39,24 @@ import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
  */
 public class CreateColumnFamilyCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of this column family
      */
-    public final String name;
+    private final String name;
 
-    /**
+    /*
      * Keyspace of this column family
      */
-    public final String keySpace;
+    private final String keySpace;
 
     /**
      * Sets all parameters used to creating column family.
      *
-     * @param name Name of column family to create
-     * @param keySpace Name of used keyspace
+     * @param name name of column family to create
+     * @param keySpace name of used keyspace
      */
-    public CreateColumnFamilyCommand(String name, String keySpace) {
-        this.name     = name;
+    public CreateColumnFamilyCommand(final String name, final String keySpace) {
+        this.name = name;
         this.keySpace = keySpace;
     }
 
@@ -64,11 +65,11 @@ public class CreateColumnFamilyCommand implements IDBCommand {
      * provided keyspace.
      *
      * @param model <code>IDataModel</code> implementation
-     * @throws PythiaException
+     * @throws PythiaException if keyspace is not found
      */
     @Override
     public Object execute(IDataModel model) throws PythiaException {
-        IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
+        final IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
 
         if (space != null) {
             space.addColumnFamily(name, model.createColumnFamily());
@@ -76,5 +77,15 @@ public class CreateColumnFamilyCommand implements IDBCommand {
             throw new PythiaException(PythiaError.DATA_NOT_FOUND);
         }
         return null;
+    }
+
+    // test only
+    public String getName() {
+        return name;
+    }
+
+    // test only
+    public String getKeySpace() {
+        return keySpace;
     }
 }

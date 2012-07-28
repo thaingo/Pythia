@@ -23,8 +23,9 @@
  */
 package com.github.pepewuzzhere.pythia;
 
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
+import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -57,7 +58,8 @@ public class DBTest {
 
     @Test
     public void testAddKeySpace() {
-        IKeySpace keySpace = new KeySpace("Test");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test");
 
         try {
             DB.INSTANCE.addKeySpace(keySpace);
@@ -70,7 +72,8 @@ public class DBTest {
 
     @Test
     public void testAddKeySpaceIfAlreadyExists() {
-        IKeySpace keySpace = new KeySpace("Test");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test");
 
         boolean wasThrown = false;
         try {
@@ -85,7 +88,8 @@ public class DBTest {
 
     @Test
     public void testDropKeySpace() {
-        IKeySpace keySpace = new KeySpace("Test");
+        IDataModel model = new HashMapDataModel();
+        IKeySpace keySpace = model.createKeySpace("Test");
 
         try {
             DB.INSTANCE.addKeySpace(keySpace);

@@ -21,15 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.datamodel.hashmap;
 
 import com.github.pepewuzzhere.pythia.PythiaError;
 import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumn;
 import com.github.pepewuzzhere.pythia.datamodel.IRow;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Adaptation of {@link com.github.pepewuzzhere.pythia.datamodel.IRow}
@@ -39,40 +46,39 @@ import java.util.*;
  * @version %I%, %G%
  * @since 1.0
  */
-public class Row implements IRow {
+class Row implements IRow, Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private final byte[] key;
-    private HashMap<ByteArrayWrapper, IColumn> columns = new HashMap<>();
+    private final Map<ByteArrayWrapper, IColumn> columns = new HashMap<>();
 
     /**
      * Sets key of created row.
      *
-     * @param key Key of this row
+     * @param key key of this row
      */
-    public Row(ByteBuffer key) {
+    public Row(final ByteBuffer key) {
         this.key = key.array();
     }
 
     @Override
-    public void addColumn(IColumn column) {
+    public void addColumn(final IColumn column) {
         if (columns.containsKey(toKey(column.getKey()))) {
             // update value in exiting column
-            columns.get(toKey(column.getKey()))
-                   .setValue(column.getValue());
+            columns.get(toKey(column.getKey())).setValue(column.getValue());
         } else {
             columns.put(toKey(column.getKey()), column);
         }
     }
 
     @Override
-    public IColumn getColumn(ByteBuffer key) {
+    public IColumn getColumn(final ByteBuffer key) {
         return columns.get(toKey(key));
     }
 
     @Override
-    public void updateColumn(ByteBuffer key, ByteBuffer value)
+    public void updateColumn(final ByteBuffer key, final ByteBuffer value)
             throws PythiaException
     {
         if (columns.containsKey(toKey(key))) {
@@ -83,7 +89,7 @@ public class Row implements IRow {
     }
 
     @Override
-    public void deleteColumn(ByteBuffer key) throws PythiaException {
+    public void deleteColumn(final ByteBuffer key) throws PythiaException {
         if (columns.containsKey(toKey(key))) {
             columns.remove(toKey(key));
         } else {
@@ -98,7 +104,7 @@ public class Row implements IRow {
 
     @Override
     public String toString() {
-        StringBuilder ret = new StringBuilder();
+        final StringBuilder ret = new StringBuilder();
         ret.append("{\"").append(new String(key)).append("\":{");
 
         Set<Map.Entry<ByteArrayWrapper, IColumn>> cols = columns.entrySet();
@@ -121,7 +127,7 @@ public class Row implements IRow {
         }
         ret.append("}}");
 
-        return  ret.toString();
+        return ret.toString();
     }
 
     @Override
@@ -130,7 +136,7 @@ public class Row implements IRow {
             Row r = (Row)obj;
 
             return Arrays.equals(key, r.getKey().array())
-                    && columns.equals(r.getColumns());
+                   && columns.equals(r.getColumns());
         } else {
             return false;
         }
@@ -147,13 +153,13 @@ public class Row implements IRow {
     /**
      * Gets list of columns in this row.
      *
-     * @return List of columns
+     * @return list of columns
      */
-    protected HashMap<ByteArrayWrapper, IColumn> getColumns() {
-        return columns;
+    protected Map<ByteArrayWrapper, IColumn> getColumns() {
+        return new HashMap<>(columns);
     }
 
-    private ByteArrayWrapper toKey(ByteBuffer buffer) {
+    private ByteArrayWrapper toKey(final ByteBuffer buffer) {
         return new ByteArrayWrapper(buffer.array());
     }
 

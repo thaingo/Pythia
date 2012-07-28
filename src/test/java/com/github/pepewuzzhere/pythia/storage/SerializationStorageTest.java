@@ -27,15 +27,13 @@ import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.ColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.Row;
 import com.github.pepewuzzhere.pythia.pql.command.*;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import static org.junit.Assert.*;
 import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -89,7 +87,7 @@ public class SerializationStorageTest {
 
     @Test
     public void testRead() throws Exception {
-
+        IDataModel model = new HashMapDataModel();
         // write data to disc
         File db = new File(ROOT + "/Test");
         db.mkdirs();
@@ -97,8 +95,8 @@ public class SerializationStorageTest {
         db = new File(ROOT + "/Test2");
         db.mkdirs();
 
-        IColumnFamily columnFamily = new ColumnFamily();
-        columnFamily.addRow(new Row(ByteBuffer.wrap("pepe".getBytes())));
+        IColumnFamily columnFamily = model.createColumnFamily();
+        columnFamily.addRow(model.createRow(ByteBuffer.wrap("pepe".getBytes())));
         try (ObjectOutputStream out =
                 new ObjectOutputStream(
                     new FileOutputStream(
@@ -110,8 +108,8 @@ public class SerializationStorageTest {
             out.flush();
         }
 
-        IColumnFamily columnFamily2 = new ColumnFamily();
-        columnFamily2.addRow(new Row(ByteBuffer.wrap("hello".getBytes())));
+        IColumnFamily columnFamily2 = model.createColumnFamily();
+        columnFamily2.addRow(model.createRow(ByteBuffer.wrap("hello".getBytes())));
         try (ObjectOutputStream out =
                 new ObjectOutputStream(
                     new FileOutputStream(

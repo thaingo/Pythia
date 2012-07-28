@@ -26,7 +26,6 @@ package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.pql.IGrammar;
 import com.github.pepewuzzhere.pythia.pql.ParseTree;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 
@@ -40,11 +39,11 @@ import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 public class LL1Interpreter implements IInterpreter {
 
     @Override
-    public Object interpret(IGrammar grammar, ParseTree node, Context ctx)
-            throws PythiaException
+    public Object interpret(
+            final ParseTree node, final Context ctx) throws PythiaException
     {
-        StartStmtInterpreter interpreter = new StartStmtInterpreter();
-        return interpreter.interpret(grammar, node, ctx);
+        final StartStmtInterpreter interpreter = new StartStmtInterpreter();
+        return interpreter.interpret(node, ctx);
     }
 
 }

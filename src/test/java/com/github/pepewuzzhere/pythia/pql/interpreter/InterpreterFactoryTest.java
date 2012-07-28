@@ -23,13 +23,12 @@
  */
 package com.github.pepewuzzhere.pythia.pql.interpreter;
 
-import com.github.pepewuzzhere.pythia.pql.interpreter.ll1.LL1Interpreter;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.pql.IGrammar;
 import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
+import com.github.pepewuzzhere.pythia.pql.interpreter.ll1.LL1Interpreter;
+import org.junit.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.junit.*;
 
 /**
  *
@@ -64,21 +63,7 @@ public class InterpreterFactoryTest {
 
         boolean wasThrown = false;
         try {
-            interpreter =
-                InterpreterFactory.factory(new IGrammar() {
-
-                    @Override
-                    public int[] getGrammar() {
-                        throw new UnsupportedOperationException(
-                                "Not supported yet.");
-                    }
-
-                    @Override
-                    public Integer[] getSymbolsWith(int symbol) {
-                        throw new UnsupportedOperationException(
-                                "Not supported yet.");
-                    }
-                }, null);
+            interpreter = InterpreterFactory.factory(null, null);
             assertFalse(interpreter instanceof IInterpreter);
         } catch (PythiaException e) {
             wasThrown = true;

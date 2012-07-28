@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
@@ -38,23 +39,23 @@ import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
  */
 public class DropColumnFamilyCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of dropped column family
      */
-    public final String name;
+    private final String name;
 
     /**
      * Keyspace of dropped column family
      */
-    public final String keySpace;
+    private final String keySpace;
 
     /**
      * Sets all parameters used for dropping column family.
      *
-     * @param name Name of column family to drop
-     * @param keySpace Name of used keyspace
+     * @param name name of column family to drop
+     * @param keySpace name of used keyspace
      */
-    public DropColumnFamilyCommand(String name, String keySpace) {
+    public DropColumnFamilyCommand(final String name, final String keySpace) {
         this.name     = name;
         this.keySpace = keySpace;
     }
@@ -63,11 +64,11 @@ public class DropColumnFamilyCommand implements IDBCommand {
      * Drops column family in provided keyspace
      *
      * @param model <code>IDataModel</code> implementation
-     * @throws PythiaException
+     * @throws PythiaException if there is a problem with dropping column family
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
-        IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
+    public Object execute(final IDataModel model) throws PythiaException {
+        final IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
 
         if (space != null) {
             space.dropColumnFamily(name);
@@ -75,6 +76,16 @@ public class DropColumnFamilyCommand implements IDBCommand {
             throw new PythiaException(PythiaError.DATA_NOT_FOUND);
         }
         return null;
+    }
+
+    // test only
+    public String getName() {
+        return name;
+    }
+
+    // test only
+    public String getKeySpace() {
+        return keySpace;
     }
 
 }

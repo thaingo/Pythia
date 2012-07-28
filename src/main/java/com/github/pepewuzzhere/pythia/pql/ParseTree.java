@@ -25,11 +25,13 @@
 package com.github.pepewuzzhere.pythia.pql;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Parse tree is tree structure with grammar symbols. It is output of syntax
- * parser and is used to final compilation of PQL.
+ * Parse tree is tree structure with grammar symbols.
+ *
+ * It is output of syntax parser and is used to final compilation of PQL.
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
@@ -38,35 +40,37 @@ import java.util.Objects;
 public class ParseTree {
 
     private final ISymbol symbol;
-    private ArrayList<ParseTree> childrens;
+    private final Token token;
+    private final List<ParseTree> childrens;
 
     /**
      * Creates tree node.
      *
-     * @param symbol Value of node
+     * @param symbol symbol of token
+     * @param token token attached to tree node
      */
-    public ParseTree(ISymbol symbol) {
-        childrens   = new ArrayList<>();
+    public ParseTree(final ISymbol symbol, final Token token) {
+        childrens = new ArrayList<>();
         this.symbol = symbol;
+        this.token = token;
     }
 
     /**
      * Adds new childs to tree node.
      *
-     * @param children Values of new child
+     * @param symbol symbol of token
+     * @param token token to attach to node
      */
-    public void add(ISymbol... children) {
-        for (int i = 0; i < children.length; ++i) {
-            childrens.add(new ParseTree(children[i]));
-        }
+    public void add(final ISymbol symbol, final Token token) {
+        childrens.add(new ParseTree(symbol, token));
     }
 
      /**
      * Adds new childs to tree node.
      *
-     * @param children Values of new child
+     * @param children values of new child
      */
-    public void add(ParseTree... children) {
+    public void add(final ParseTree... children) {
         for (int i = 0; i < children.length; ++i) {
             childrens.add(children[i]);
         }
@@ -75,20 +79,30 @@ public class ParseTree {
     /**
      * Gets childerns list of this node.
      *
-     * @return Childrens list
+     * @return childrens list
      */
-    public ArrayList<ParseTree> getChildrens() {
-        return childrens;
+    public List<ParseTree> getChildrens() {
+        return new ArrayList<>(childrens);
     }
 
     /**
-     * Gets value of this node.
+     * Gets symbol of this node
      *
-     * @return Value of node
+     * @return symbol attached to this node
      */
     public ISymbol getSymbol() {
         return symbol;
     }
+
+    /**
+     * Gets token of this node
+     *
+     * @return token attached to this node
+     */
+    public Token getToken() {
+        return token;
+    }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -96,8 +110,9 @@ public class ParseTree {
             return false;
         }
         ParseTree t = (ParseTree)obj;
-        return (symbol != null ? symbol.equals(t.getSymbol())
-                               : symbol == t.getSymbol())
+        return symbol == t.getSymbol()
+                && (token != null ? token.equals(t.getToken())
+                                  : null == t.getToken())
                 && (childrens.equals(t.getChildrens()));
     }
 
@@ -105,6 +120,7 @@ public class ParseTree {
     public int hashCode() {
         int hash = 5;
         hash = 89 * hash + Objects.hashCode(this.symbol);
+        hash = 89 * hash + Objects.hashCode(this.token);
         hash = 89 * hash + Objects.hashCode(this.childrens);
         return hash;
     }

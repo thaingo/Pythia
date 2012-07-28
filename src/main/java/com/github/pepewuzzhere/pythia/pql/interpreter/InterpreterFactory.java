@@ -38,15 +38,20 @@ import com.github.pepewuzzhere.pythia.pql.interpreter.ll1.LL1Interpreter;
  * @version %I%, %G%
  * @since 1.0
  */
-public class InterpreterFactory {
+public final class InterpreterFactory {
+
+    private InterpreterFactory() {
+        throw new AssertionError();
+    }
 
     /**
      * Creates interpreter for value of parse tree node.
      *
-     * @param grammar Grammar used in parser
-     * @param node Node of parse tree
-     * @return Interpreter for parse tree node
-     * @throws PythiaException
+     * @param grammar grammar used in parser
+     * @param node node of parse tree
+     * @return interpreter for parse tree node
+     * @throws PythiaException if interpreter for providen grammar doesn't
+     *                         exists
      */
     public static IInterpreter factory(IGrammar grammar, ParseTree node)
             throws PythiaException

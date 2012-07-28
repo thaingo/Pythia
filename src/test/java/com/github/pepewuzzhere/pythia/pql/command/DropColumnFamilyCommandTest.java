@@ -25,9 +25,8 @@ package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.ColumnFamily;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
-import com.github.pepewuzzhere.pythia.datamodel.hashmap.KeySpace;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -73,12 +72,13 @@ public class DropColumnFamilyCommandTest {
 
     @Test
     public void testExecuteIfColumnFamilyNotExists() {
+        IDataModel model = new HashMapDataModel();
         IDBCommand command = new DropColumnFamilyCommand("Users", "Test");
 
         boolean wasThrown = false;
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
-            command.execute(new HashMapDataModel());
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
+            command.execute(model);
         } catch(PythiaException e) {
             wasThrown = true;
         }
@@ -88,13 +88,14 @@ public class DropColumnFamilyCommandTest {
 
     @Test
     public void testExecuteIfColumnFamilyExists() {
+        IDataModel model = new HashMapDataModel();
         IDBCommand command = new DropColumnFamilyCommand("Users", "Test");
 
         try {
-            DB.INSTANCE.addKeySpace(new KeySpace("Test"));
+            DB.INSTANCE.addKeySpace(model.createKeySpace("Test"));
             DB.INSTANCE.getKeySpace("Test")
-                       .addColumnFamily("Users", new ColumnFamily());
-            command.execute(new HashMapDataModel());
+                       .addColumnFamily("Users", model.createColumnFamily());
+            command.execute(model);
         } catch(PythiaException e) {
             fail(e.getMessage());
         }

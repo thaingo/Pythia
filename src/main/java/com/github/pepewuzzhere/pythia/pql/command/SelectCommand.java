@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql.command;
 
 import com.github.pepewuzzhere.pythia.DB;
@@ -40,30 +41,31 @@ import java.nio.ByteBuffer;
  */
 public class SelectCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of selected column family
      */
-    public final String columnFamily;
+    private final String columnFamily;
 
-    /**
+    /*
      * Name of used keyspace
      */
-    public final String keySpace;
+    private final String keySpace;
 
-    /**
+    /*
      * Value of selected row key
      */
-    public final ByteBuffer rowKey;
+    private final ByteBuffer rowKey;
 
     /**
      * Sets all parameters used to select rows from column family.
      *
-     * @param columnFamily Name of column family
-     * @param keySpace Used keyspace
-     * @param rowKey Key of row
+     * @param columnFamily name of column family
+     * @param keySpace used keyspace
+     * @param rowKey key of row
      */
     public SelectCommand(
-            String columnFamily, String keySpace, ByteBuffer rowKey
+        final String columnFamily, final String keySpace,
+        final ByteBuffer rowKey
     ) {
         this.columnFamily = columnFamily;
         this.keySpace     = keySpace;
@@ -75,16 +77,16 @@ public class SelectCommand implements IDBCommand {
      *
      * @param model <code>IDataModel</code> implementation
      * @return <code>IRow</code> - selected row
-     * @throws PythiaException
+     * @throws PythiaException if there is a problem with deleting row
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
+    public Object execute(final IDataModel model) throws PythiaException {
 
-        IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
+        final IKeySpace space = DB.INSTANCE.getKeySpace(keySpace);
 
         // keyspace check
         if (space != null) {
-            IColumnFamily table = space.getColumnFamily(columnFamily);
+            final IColumnFamily table = space.getColumnFamily(columnFamily);
 
             // column family check
             if (table != null) {
@@ -95,5 +97,20 @@ public class SelectCommand implements IDBCommand {
         } else {
             throw new PythiaException(PythiaError.DATA_NOT_FOUND);
         }
+    }
+
+    // test only
+    public String getKeySpace() {
+        return keySpace;
+    }
+
+    // test only
+    public String getColumnFamily() {
+        return columnFamily;
+    }
+
+    // test only
+    public ByteBuffer getRowKey() {
+        return ByteBuffer.wrap(rowKey.array().clone());
     }
 }

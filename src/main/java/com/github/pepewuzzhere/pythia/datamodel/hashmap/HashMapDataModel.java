@@ -21,9 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.datamodel.hashmap;
 
-import com.github.pepewuzzhere.pythia.datamodel.*;
+
+import com.github.pepewuzzhere.pythia.datamodel.IColumn;
+import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
+import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
+import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
+import com.github.pepewuzzhere.pythia.datamodel.IRow;
 import java.nio.ByteBuffer;
 
 /**
@@ -37,7 +43,7 @@ import java.nio.ByteBuffer;
 public class HashMapDataModel implements IDataModel {
 
     @Override
-    public IKeySpace createKeySpace(String name) {
+    public IKeySpace createKeySpace(final String name) {
         return new KeySpace(name);
     }
 
@@ -47,12 +53,12 @@ public class HashMapDataModel implements IDataModel {
     }
 
     @Override
-    public IColumn createColumn(ByteBuffer key) {
+    public IColumn createColumn(final ByteBuffer key) {
         return new Column(key);
     }
 
     @Override
-    public IRow createRow(ByteBuffer key) {
+    public IRow createRow(final ByteBuffer key) {
         return new Row(key);
     }
 

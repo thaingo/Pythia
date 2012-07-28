@@ -24,10 +24,11 @@
 package com.github.pepewuzzhere.pythia.datamodel;
 
 import com.github.pepewuzzhere.pythia.PythiaException;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * KeySpace has similar meaning like database name in relational databases.
+ *
  * It is set of {@link IColumnFamily}. Before any operation on Pythia database
  * current keyspace should be determined. KeySpace should have unique name
  * in Pytha database.
@@ -42,39 +43,40 @@ public interface IKeySpace {
      * Adds new column family to keyspace. Name should be unique or exception
      * will be thrown.
      *
-     * @param name Name of column family
-     * @param columnFamily Column family to add
-     * @throws PythiaException
+     * @param name name of column family
+     * @param columnFamily column family to add
+     * @throws PythiaException if column family already exists
      */
-    void addColumnFamily(String name, IColumnFamily columnFamily)
+    void addColumnFamily(final String name, final IColumnFamily columnFamily)
             throws PythiaException;
 
     /**
      * Gets column family by specified name.
      *
-     * @param name Name of column family
-     * @return <code>IColumnFamily</code> or null
+     * @param name name of column family
+     * @return {@link IColumnFamily} data or null
      */
-    IColumnFamily getColumnFamily(String name);
+    IColumnFamily getColumnFamily(final String name);
 
     /**
      * Drops column family from this keyspace.
      *
-     * @param name Name of column family
-     * @throws PythiaException
+     * @param name name of column family
+     * @throws PythiaException if column family doesn't exists
      */
-    void dropColumnFamily(String name) throws PythiaException;
+    void dropColumnFamily(final String name) throws PythiaException;
 
     /**
      * Gets name of this keyspace, should be final and unique.
-     * @return Name of keyspace
+     *
+     * @return name of keyspace
      */
     String getName();
 
     /**
      * Checks if keyspace should be saved in storage.
      *
-     * @return Should be saved?
+     * @return changes was made?
      */
     boolean isDirty();
 
@@ -86,7 +88,7 @@ public interface IKeySpace {
     /**
      * Gets list of colum families in this keyspace.
      *
-     * @return List of column families
+     * @return list of column families
      */
-    HashMap<String, IColumnFamily> getColumnFamilies();
+    Map<String, IColumnFamily> getColumnFamilies();
 }

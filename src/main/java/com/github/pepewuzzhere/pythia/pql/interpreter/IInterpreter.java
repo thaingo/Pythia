@@ -26,7 +26,6 @@ package com.github.pepewuzzhere.pythia.pql.interpreter;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.pql.IGrammar;
 import com.github.pepewuzzhere.pythia.pql.ParseTree;
 
 /**
@@ -41,12 +40,12 @@ public interface IInterpreter {
     /**
      * Interpretes node of parse tree.
      *
-     * @param grammar Used grammar for parsing
-     * @param node Parse tree node to interpret
-     * @param ctx Context of execution
-     * @return Result of interpretation
-     * @throws PythiaException
+     * @param node parse tree node to interpret
+     * @param ctx vontext of execution
+     * @return result of interpretation
+     * @throws PythiaException if something is wrong with parse node
+     *                         interpretation
      */
-    Object interpret(IGrammar grammar, ParseTree node, Context ctx)
-            throws PythiaException;
+    Object interpret(
+            final ParseTree node, final Context ctx) throws PythiaException;
 }

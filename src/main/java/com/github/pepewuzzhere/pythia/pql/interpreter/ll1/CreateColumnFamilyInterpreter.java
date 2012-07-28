@@ -26,10 +26,8 @@ package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
 import com.github.pepewuzzhere.pythia.Context;
 import com.github.pepewuzzhere.pythia.PythiaException;
-import com.github.pepewuzzhere.pythia.pql.IGrammar;
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
 import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
+import com.github.pepewuzzhere.pythia.pql.Terminal;
 import com.github.pepewuzzhere.pythia.pql.command.CreateColumnFamilyCommand;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 
@@ -40,27 +38,25 @@ import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
  * @version %I%, %G%
  * @since 1.0
  */
-public class CreateColumnFamilyInterpreter implements IInterpreter {
+class CreateColumnFamilyInterpreter implements IInterpreter {
 
     @Override
-    public Object interpret(IGrammar grammar, ParseTree node, Context ctx)
-            throws PythiaException
+    public Object interpret(
+            final ParseTree node, final Context ctx) throws PythiaException
     {
-        LL1Grammar g = (LL1Grammar)grammar;
         String value = "";
         for (ParseTree n : node.getChildrens()) {
-            int code = g.getCode(n.getSymbol());
-            if (code == g.VAR) {
-                Token t = (Token)n.getSymbol();
-                value = t.getValue();
+            if (n.getSymbol() == Terminal.VAR) {
+                value = n.getToken().getValue();
             }
         }
 
         return new CreateColumnFamilyCommand(
-                value,
-                ctx.getActualKeySpace() != null
-                    ? ctx.getActualKeySpace().getName()
-                    : null);
+            value,
+            ctx.getActualKeySpace() != null
+                ? ctx.getActualKeySpace().getName()
+                : null
+        );
     }
 
 }

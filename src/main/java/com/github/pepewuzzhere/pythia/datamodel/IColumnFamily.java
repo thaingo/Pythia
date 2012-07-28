@@ -21,63 +21,67 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.datamodel;
 
 import com.github.pepewuzzhere.pythia.PythiaException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**
- * <code>ColumnFamily</code> is map of {@link IRow}. It is similar to table
- * in relational databases.
+ * <code>ColumnFamily</code> is map of {@link IRow}.
+ *
+ * It is similar to table in relational databases.
  *
  * @author Piotr 'pepe' Picheta <piotr.pepe.picheta@gmail.com>
  * @version %I%, %G%
  * @since 1.0
  */
-public interface IColumnFamily extends Serializable {
+public interface IColumnFamily {
 
     /**
-     * Adds new row to column family. Row has unique key in column family.
+     * Adds new row to column family.
      *
-     * @param row New row added to column family.
-     * @throws PythiaException
+     * Row has unique key in column family.
+     *
+     * @param row new row added to column family.
+     * @throws PythiaException if row already exists in column family
      */
-    void addRow(IRow row) throws PythiaException;
+    void addRow(final IRow row) throws PythiaException;
 
     /**
      * Gets row by key.
      *
-     * @param key Key of row
-     * @return Row or null if not found
+     * @param key key of row
+     * @return row or null if not found
      */
-    IRow getRow(ByteBuffer key);
+    IRow getRow(final ByteBuffer key);
 
     /**
      * Updates column value in specified row.
      *
-     * @param key Key of row
-     * @param columnKey Key of column in row to update
-     * @param columnValue New value of column
+     * @param key key of row
+     * @param columnKey key of column in row to update
+     * @param columnValue new value of column
      *
-     * @throws PythiaException
+     * @throws PythiaException if row  or column doesn't exists
      */
     void updateRow(
-            ByteBuffer key, ByteBuffer columnKey, ByteBuffer columnValue)
-            throws PythiaException;
+        final ByteBuffer key, final ByteBuffer columnKey,
+        final ByteBuffer columnValue
+    ) throws PythiaException;
 
     /**
      * Deletes row in this column family.
      *
-     * @param key Key of row to delete
-     * @throws PythiaException
+     * @param key key of row to delete
+     * @throws PythiaException if row doesn't exists
      */
-    void deleteRow(ByteBuffer key) throws PythiaException;
+    void deleteRow(final ByteBuffer key) throws PythiaException;
 
     /**
      * Checks if this column family should be saved in storage.
      *
-     * @return Should be saved?
+     * @return changes was made?
      */
     boolean isDirty();
 

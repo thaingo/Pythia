@@ -23,10 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.pql.interpreter.ll1;
 
-import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
-import com.github.pepewuzzhere.pythia.pql.ParseTree;
-import com.github.pepewuzzhere.pythia.pql.Token;
-import com.github.pepewuzzhere.pythia.pql.TokenType;
+import com.github.pepewuzzhere.pythia.pql.*;
 import com.github.pepewuzzhere.pythia.pql.interpreter.IInterpreter;
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
@@ -60,18 +57,29 @@ public class KeyValueListPrimInterpreterTest {
     public void testInterpret() throws Exception {
         LL1Grammar grammar = new LL1Grammar();
         ParseTree nextValue = new ParseTree(
-                grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM));
+                LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null);
         nextValue.add(
-            new ParseTree(new Token(TokenType.COMMA)),
-            new ParseTree(new Token(TokenType.VARIABLE, "name")),
-            new ParseTree(new Token(TokenType.EQUAL)),
-            new ParseTree(new Token(TokenType.VARIABLE, "Piotr")),
-            new ParseTree(grammar.getSymbol(grammar.KEY_VALUES_LIST_PRIM))
+            new ParseTree(
+                Terminal.SYMBOL_COMMA,
+                new Token(TokenType.COMMA)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "name")
+            ),
+            new ParseTree(
+                Terminal.SYMBOL_EQUAL,
+                new Token(TokenType.EQUAL)
+            ),
+            new ParseTree(
+                Terminal.VAR,
+                new Token(TokenType.VARIABLE, "Piotr")
+            ),
+            new ParseTree(LL1Grammar.NonTerminal.KEY_VALUES_LIST_PRIM, null)
         );
 
         IInterpreter interpreter = new KeyValueListPrimInterpreter();
-        String[] list =
-                (String[])interpreter.interpret(grammar, nextValue, null);
+        String[] list = (String[])interpreter.interpret(nextValue, null);
 
         assertEquals(list.length, 2);
         assertEquals(list[0], "name");

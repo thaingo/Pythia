@@ -31,39 +31,11 @@ package com.github.pepewuzzhere.pythia.pql;
  * @since 1.0
  */
 public enum TokenType {
-
-    /**
-     * ,
-     */
-    COMMA,
-
-    /**
-     * Empty symbol
-     */
-    EPSILON,
-
-    /**
-     * =
-     */
-    EQUAL,
-
-    /**
-     * Keyword of PQL
-     */
-    KEYWORD,
-
-    /**
-     * (
-     */
-    LPAREN,
-
-    /**
-     * )
-     */
-    RPAREN,
-
-    /**
-     * Variable value
-     */
-    VARIABLE;
+    COMMA,      /** , */
+    EPSILON,    /** empty symbol */
+    EQUAL,      /** = */
+    KEYWORD,    /** keyword of PQL */
+    LPAREN,     /** ( */
+    RPAREN,     /** ) */
+    VARIABLE;   /** variable value */
 }

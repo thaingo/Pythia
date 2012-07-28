@@ -36,17 +36,17 @@ import com.github.pepewuzzhere.pythia.datamodel.IDataModel;
  */
 public class DropKeySpaceCommand implements IDBCommand {
 
-    /**
+    /*
      * Name of dropped keyspace
      */
-    public final String name;
+    private final String name;
 
     /**
      * Sets all parameters used to dropping keyspace.
      *
-     * @param name Name of keyspace
+     * @param name name of keyspace
      */
-    public DropKeySpaceCommand(String name) {
+    public DropKeySpaceCommand(final String name) {
         this.name = name;
     }
 
@@ -54,11 +54,16 @@ public class DropKeySpaceCommand implements IDBCommand {
      * Drops keyspace from this command parameters.
      *
      * @param model <code>IDataModel</code> implementation
-     * @throws PythiaException
+     * @throws PythiaException if there is a problem with keyspace dropping
      */
     @Override
-    public Object execute(IDataModel model) throws PythiaException {
+    public Object execute(final IDataModel model) throws PythiaException {
         DB.INSTANCE.dropKeySpace(name);
         return null;
+    }
+
+     // test only
+    public String getName() {
+        return name;
     }
 }

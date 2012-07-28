@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.pepewuzzhere.pythia.pql;
 
 import com.github.pepewuzzhere.pythia.PythiaException;
@@ -34,13 +35,15 @@ import com.github.pepewuzzhere.pythia.PythiaException;
  * @since 1.0
  */
 public interface ILexer {
+    
     /**
      * Tokenizes input string to token list.
      *
-     * @param source Input string with PQL command.
-     * @param it Class that iterates source string andd returns founded tokens.
-     * @return Array with token list.
-     * @throws PythiaException
+     * @param source input string with PQL command
+     * @param it class that iterates source string andd returns founded tokens
+     * @return array with token list
+     * @throws PythiaException if there are unknown symbols in source
      */
-    Token[] tokenize(String source, ITokenIterator it) throws PythiaException;
+    Token[] tokenize(final String source, final ITokenIterator it)
+            throws PythiaException;
 }

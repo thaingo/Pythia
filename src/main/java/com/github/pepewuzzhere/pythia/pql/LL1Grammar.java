@@ -25,6 +25,8 @@
 package com.github.pepewuzzhere.pythia.pql;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Definition of LL(1) Grammar used by PQL.
@@ -35,125 +37,100 @@ import java.util.ArrayList;
  */
 public class LL1Grammar extends IGrammar {
 
-    /** <create_keyspace_stmt> ::= <KEYSPACE> <VAR> */
-    @SymbolNonTerminal public final int STMT_CREATE_KEYSPACE     = 23;
-    /** <drop_keyspace_stmt> ::= <KILL> <VAR> */
-    @SymbolNonTerminal public final int STMT_DROP_KEYSPACE       = 24;
-    /** <use_keyspace_stmt> ::= <USE> <VAR> */
-    @SymbolNonTerminal public final int STMT_USE_KEYSPACE        = 25;
-    /** <create_columnfamily_stmt> ::= <CREATE> <COLUMNFAMILY> <VAR> */
-    @SymbolNonTerminal public final int STMT_CREATE_COLUMNFAMILY = 26;
-    /** <drop_columnfamily_stmt> ::= <DROP> <COLUMNFAMILY> <VAR> */
-    @SymbolNonTerminal public final int STMT_DROP_COLUMNFAMILY   = 27;
-    /** <key_values_list'> ::= ,<var><key_values_list'>|Epsilon */
-    @SymbolNonTerminal public final int KEY_VALUES_LIST_PRIM     = 28;
-    /** <key_values_list> ::= <KEY>=<VAR><key_values_list'> */
-    @SymbolNonTerminal public final int KEY_VALUES_LIST          = 29;
-    /** <insert_stmt> ::= <INSERT><INTO><VAR>(<key_values_list>) */
-    @SymbolNonTerminal public final int STMT_INSERT              = 30;
-    /** <where_stmt> ::= <WHERE><KEY>=<VAR> */
-    @SymbolNonTerminal public final int WHERE                    = 31;
-    /** <update_stmt> ::= <UPDATE><VAR><SET><key_values_list> */
-    @SymbolNonTerminal public final int STMT_UPDATE              = 32;
-    /** <delete_stmt> ::= <DELETE><FROM><VAR><where_stmt> */
-    @SymbolNonTerminal public final int STMT_DELETE              = 33;
-    /** <select_stmt> ::= <SELECT><FROM><VAR><where_stmt> */
-    @SymbolNonTerminal public final int STMT_SELECT              = 34;
     /**
-     * <start_stmt> ::= <create_keyspace_stmt> | <drop_keyspace_stmt> |
-     * <use_keyspace_stmt> | <create_columnfamily_stmt> |
-     * <drop_columnfamily_stmt> | <insert_stmt> | <update_stmt> |
-     * <delete_stmt> | <select_stmt>
+     * Enmeration of nonterminal symbols used in ll1 grammar
      */
-    @SymbolNonTerminal public final int STMT_START               = 35;
-
-    /** count of nonterminal symbols */
-    public static final int NONTERMINAL_COUNT = 14;
-
-    /** max code of nonterminal symbols */
-    public static final int NONTERMINAL_MAX = 35;
-
-    private int[] grammar;
-
-    /**
-     * Create LL(1) grammar. Insert grammar of PQL.
-     */
-    public LL1Grammar() {
-        // <create_keyspace_stmt> ::= <KEYSPACE> <VAR>
-        symbols.put(STMT_CREATE_KEYSPACE, new NonTerminal(
-            new Production(KEY_KEYSPACE, VAR)
-        ));
-
-        // <drop_keyspace_stmt> ::= <KILL> <VAR>
-        symbols.put(STMT_DROP_KEYSPACE, new NonTerminal(
-            new Production(KEY_KILL, VAR)
-        ));
-
-        // <use_keyspace_stmt> ::= <USE> <VAR>
-        symbols.put(STMT_USE_KEYSPACE, new NonTerminal(
-            new Production(KEY_USE, VAR)
-        ));
-
-        // <create_columnfamily_stmt> ::= <CREATE> <COLUMNFAMILY> <VAR>
-        symbols.put(STMT_CREATE_COLUMNFAMILY, new NonTerminal(
-            new Production(KEY_CREATE, KEY_COLUMNFAMILY, VAR)
-        ));
-
-        // <drop_columnfamily_stmt> ::= <DROP> <COLUMNFAMILY> <VAR>
-        symbols.put(STMT_DROP_COLUMNFAMILY, new NonTerminal(
-            new Production(KEY_DROP, KEY_COLUMNFAMILY, VAR)
-        ));
-
-        // <key_values_list'> ::= ,<var><key_values_list'>|Epsilon
-        symbols.put(KEY_VALUES_LIST_PRIM, new NonTerminal(
+    public static enum NonTerminal implements ISymbol {
+        /** {@literal <create_keyspace_stmt> ::= <KEYSPACE> <VAR>} */
+        STMT_CREATE_KEYSPACE(
+            new Production(Terminal.KEY_KEYSPACE, Terminal.VAR)
+        ),
+        /** {@literal <drop_keyspace_stmt> ::= <KILL> <VAR>} */
+        STMT_DROP_KEYSPACE(
+            new Production(Terminal.KEY_KILL, Terminal.VAR)
+        ),
+        /** {@literal <use_keyspace_stmt> ::= <USE> <VAR>} */
+        STMT_USE_KEYSPACE(
+            new Production(Terminal.KEY_USE, Terminal.VAR)
+        ),
+        /**
+         * {@literal
+         * <create_columnfamily_stmt> ::= <CREATE> <COLUMNFAMILY> <VAR>
+         * }
+         */
+        STMT_CREATE_COLUMNFAMILY(
             new Production(
-                EPSILON
-            ),
+                Terminal.KEY_CREATE, Terminal.KEY_COLUMNFAMILY, Terminal.VAR)
+        ),
+        /** {@literal
+         * <drop_columnfamily_stmt> ::= <DROP> <COLUMNFAMILY> <VAR>
+         * }
+         */
+        STMT_DROP_COLUMNFAMILY(
             new Production(
-                SYMBOL_COMMA, VAR, SYMBOL_EQUAL, VAR, KEY_VALUES_LIST_PRIM
+                Terminal.KEY_DROP, Terminal.KEY_COLUMNFAMILY, Terminal.VAR)
+        ),
+        /** {@literal
+         * <key_values_list'> ::= ,<var><key_values_list'>|Epsilon
+         * }
+         */
+        KEY_VALUES_LIST_PRIM(
+            new Production(
+                Terminal.EPSILON
             )
-        ));
-
-        // <key_values_list> ::= <KEY>=<VAR><key_values_list'>
-        symbols.put(KEY_VALUES_LIST, new NonTerminal(
+        ),
+        /** {@literal <key_values_list> ::= <KEY>=<VAR><key_values_list'>} */
+        KEY_VALUES_LIST(
             new Production(
-                KEY_KEY, SYMBOL_EQUAL, VAR, KEY_VALUES_LIST_PRIM
+                Terminal.KEY_KEY, Terminal.SYMBOL_EQUAL,
+                Terminal.VAR, KEY_VALUES_LIST_PRIM
             )
-        ));
-
-        // <insert_stmt> ::= <INSERT><INTO><VAR>(<key_values_list>)
-        symbols.put(STMT_INSERT, new NonTerminal(
+        ),
+        /** {@literal
+         * <insert_stmt> ::= <INSERT><INTO><VAR>(<key_values_list>)
+         * }
+         */
+        STMT_INSERT(
             new Production(
-                KEY_INSERT, KEY_INTO, VAR, SYMBOL_LPAREN, KEY_VALUES_LIST,
-                SYMBOL_RPAREN
+                Terminal.KEY_INSERT, Terminal.KEY_INTO, Terminal.VAR,
+                Terminal.SYMBOL_LPAREN, KEY_VALUES_LIST, Terminal.SYMBOL_RPAREN
             )
-        ));
-
-        // <where_stmt> ::= <WHERE><KEY>=<VAR>
-        symbols.put(WHERE, new NonTerminal(
-            new Production(KEY_WHERE, KEY_KEY, SYMBOL_EQUAL, VAR)
-        ));
-
-        // <update_stmt> ::= <UPDATE><VAR><SET><key_values_list>
-        symbols.put(STMT_UPDATE, new NonTerminal(
-            new Production(KEY_UPDATE, VAR, KEY_SET, KEY_VALUES_LIST)
-        ));
-
-        // <delete_stmt> ::= <DELETE><FROM><VAR><where_stmt>
-        symbols.put(STMT_DELETE, new NonTerminal(
-            new Production(KEY_DELETE, KEY_FROM, VAR, WHERE)
-        ));
-
-        // <select_stmt> ::= <SELECT><FROM><VAR><where_stmt>
-        symbols.put(STMT_SELECT, new NonTerminal(
-            new Production(KEY_SELECT, KEY_FROM, VAR, WHERE)
-        ));
-
-        // <start_stmt> ::= <create_keyspace_stmt> | <drop_keyspace_stmt> |
-        // <use_keyspace_stmt> | <create_columnfamily_stmt> |
-        // <drop_columnfamily_stmt> | <insert_stmt> | <update_stmt> |
-        // <delete_stmt> | <select_stmt>
-        symbols.put(STMT_START, new NonTerminal(
+        ),
+        /** {@literal <where_stmt> ::= <WHERE><KEY>=<VAR>} */
+        WHERE(
+            new Production(
+                Terminal.KEY_WHERE, Terminal.KEY_KEY, Terminal.SYMBOL_EQUAL,
+                Terminal.VAR
+            )
+        ),
+        /** {@literal <update_stmt> ::= <UPDATE><VAR><SET><key_values_list>} */
+        STMT_UPDATE(
+            new Production(
+                Terminal.KEY_UPDATE, Terminal.VAR, Terminal.KEY_SET,
+                KEY_VALUES_LIST
+            )
+        ),
+        /** {@literal <delete_stmt> ::= <DELETE><FROM><VAR><where_stmt>} */
+        STMT_DELETE(
+            new Production(
+                Terminal.KEY_DELETE, Terminal.KEY_FROM, Terminal.VAR, WHERE
+            )
+        ),
+        /** {@literal <select_stmt> ::= <SELECT><FROM><VAR><where_stmt>} */
+        STMT_SELECT(
+            new Production(
+                Terminal.KEY_SELECT, Terminal.KEY_FROM, Terminal.VAR, WHERE
+            )
+        ),
+        /**
+         * {@literal
+         * <start_stmt> ::= <create_keyspace_stmt> | <drop_keyspace_stmt> |
+         * <use_keyspace_stmt> | <create_columnfamily_stmt> |
+         * <drop_columnfamily_stmt> | <insert_stmt> | <update_stmt> |
+         * <delete_stmt> | <select_stmt>
+         * }
+         */
+        STMT_START(
             new Production(STMT_CREATE_KEYSPACE),
             new Production(STMT_DROP_KEYSPACE),
             new Production(STMT_USE_KEYSPACE),
@@ -163,55 +140,97 @@ public class LL1Grammar extends IGrammar {
             new Production(STMT_UPDATE),
             new Production(STMT_SELECT),
             new Production(STMT_DELETE)
-        ));
+        );
 
-        grammar = new int[] {
-            STMT_CREATE_KEYSPACE,
-            STMT_DROP_KEYSPACE,
-            STMT_USE_KEYSPACE,
-            STMT_CREATE_COLUMNFAMILY,
-            STMT_DROP_COLUMNFAMILY,
-            KEY_VALUES_LIST_PRIM,
-            KEY_VALUES_LIST,
-            STMT_INSERT,
-            WHERE,
-            STMT_UPDATE,
-            STMT_DELETE,
-            STMT_SELECT,
-            STMT_START
-        };
+        static {
+            // recurent call solving
+            KEY_VALUES_LIST_PRIM.addProduction(
+                new Production(
+                    Terminal.SYMBOL_COMMA, Terminal.VAR, Terminal.SYMBOL_EQUAL,
+                    Terminal.VAR, NonTerminal.KEY_VALUES_LIST_PRIM
+                )
+            );
+        }
+
+        private final List<Production> productions;
+
+        /**
+         * Creates nonterminal symbol. NonTerminal symbol consists productions
+         * list used to create this symbol from terminal
+         * and nonterminal symbols.
+         *
+         * @param productions List of productions
+         */
+        NonTerminal(Production... productions) {
+            this.productions = new ArrayList<>(10);
+            this.productions.addAll(Arrays.asList(productions));
+        }
+
+        /**
+         * Gets productions list of this nonterminal symbol.
+         *
+         * @return List of symbols
+         */
+        Production[] getProductions() {
+            return productions.toArray(new Production[0]);
+        }
+
+        void addProduction(final Production production) {
+            this.productions.add(production);
+        }
+
+        @Override
+        public boolean isTerminal() {
+            return false;
+        }
+    }
+
+    private static final ISymbol[] GRAMMAR = new ISymbol[] {
+        NonTerminal.STMT_CREATE_KEYSPACE,
+        NonTerminal.STMT_DROP_KEYSPACE,
+        NonTerminal.STMT_USE_KEYSPACE,
+        NonTerminal.STMT_CREATE_COLUMNFAMILY,
+        NonTerminal.STMT_DROP_COLUMNFAMILY,
+        NonTerminal.KEY_VALUES_LIST_PRIM,
+        NonTerminal.KEY_VALUES_LIST,
+        NonTerminal.STMT_INSERT,
+        NonTerminal.WHERE,
+        NonTerminal.STMT_UPDATE,
+        NonTerminal.STMT_DELETE,
+        NonTerminal.STMT_SELECT,
+        NonTerminal.STMT_START
+    };
+
+    @Override
+    public ISymbol[] getGrammar() {
+        return Arrays.copyOf(GRAMMAR, GRAMMAR.length);
     }
 
     @Override
-    public int[] getGrammar() {
-        return grammar;
-    }
+    public ISymbol[] getSymbolsWith(final ISymbol symbol) {
+        final List<ISymbol> with = new ArrayList<>(GRAMMAR.length);
 
-    @Override
-    public Integer[] getSymbolsWith(int symbol) {
-        ArrayList<Integer> with = new ArrayList<>();
-
-        // for each grammar rules P: A -> w
-        for (int i = 0; i < grammar.length; ++i) {
-            if (grammar[i] == symbol) {
+        // for each GRAMMAR rules P: A -> w
+        for (int i = 0; i < GRAMMAR.length; ++i) {
+            if ((GRAMMAR[i] == symbol) || symbol.isTerminal()) {
                 continue;
             }
-            NonTerminal t = (NonTerminal)symbols.get(grammar[i]);
+            final NonTerminal t = (NonTerminal)GRAMMAR[i];
 
-            // for each production of this grammar rule
-            Production[] p = t.getProductions();
+            // for each production of this GRAMMAR rule
+            final Production[] p = t.getProductions();
             for (int j = 0; j < p.length; ++j) {
-                int[] s = p[j].getSymbols();
+                final ISymbol[] s = p[j].getSymbols();
 
                 // check if this production contains symbol to find
                 for (int k = 0; k < s.length; ++k) {
                     if (s[k] == symbol) {
-                        with.add(grammar[i]);
+                        with.add(GRAMMAR[i]);
                     }
                 }
             }
         }
-        return with.toArray(new Integer[0]);
+        return with.toArray(new ISymbol[0]);
     }
 
 }

@@ -34,12 +34,12 @@ import java.util.Arrays;
  * @version %I%, %G%
  * @since 1.0
  */
-public final class ByteArrayWrapper implements Serializable {
+final class ByteArrayWrapper implements Serializable {
 
-    /**
+    /*
      * Byte array data of this wrapper.
      */
-    public final byte[] data;
+    private final byte[] data;
 
     private static final long serialVersionUID = 1L;
 
@@ -48,8 +48,12 @@ public final class ByteArrayWrapper implements Serializable {
      *
      * @param data Byte array data to wrap.
      */
-    public ByteArrayWrapper(byte[] data) {
-        this.data = data;
+    public ByteArrayWrapper(final byte[] data) {
+        this.data = Arrays.copyOf(data, data.length);
+    }
+
+    public byte[] getData() {
+        return Arrays.copyOf(data, data.length);
     }
 
     @Override
@@ -57,7 +61,7 @@ public final class ByteArrayWrapper implements Serializable {
         if (!(other instanceof ByteArrayWrapper)) {
             return false;
         }
-        return Arrays.equals(data, ((ByteArrayWrapper)other).data);
+        return Arrays.equals(data, ((ByteArrayWrapper)other).getData());
     }
 
     @Override

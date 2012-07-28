@@ -69,15 +69,13 @@ public class ParserFactoryTest {
             IParser parser = ParserFactory.factory(new IGrammar() {
 
                 @Override
-                public int[] getGrammar() {
-                    throw new UnsupportedOperationException(
-                            "Not supported yet.");
+                public ISymbol[] getGrammar() {
+                    throw new UnsupportedOperationException("Not supported yet.");
                 }
 
                 @Override
-                public Integer[] getSymbolsWith(int symbol) {
-                    throw new UnsupportedOperationException(
-                            "Not supported yet.");
+                public ISymbol[] getSymbolsWith(ISymbol symbol) {
+                    throw new UnsupportedOperationException("Not supported yet.");
                 }
             });
 

@@ -27,7 +27,12 @@ import com.github.pepewuzzhere.pythia.PythiaError;
 import com.github.pepewuzzhere.pythia.PythiaException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+
 
 /**
  * Implementation of top-down parser algorithm for LL(1) grammars.
@@ -38,23 +43,15 @@ import java.util.Stack;
  */
 class TopDownParser implements IParser {
 
-    private final LL1Grammar grammar;
-    private final Production[][] parseTable;
+    private static final LL1Grammar GRAMMAR = new LL1Grammar();
 
-    /**
-     * Creates top-down parser for LL(1) grammar
-     *
-     * @param grammar LL(1) grammar
-     */
-    TopDownParser(LL1Grammar grammar) {
-        this.grammar = grammar;
-        parseTable = new Production[LL1Grammar.NONTERMINAL_MAX + 1]
-                                   [LL1Grammar.TERMINAL_MAX + 1];
-        try {
-            buildParseTable();
-        } catch (PythiaException e) {
-            throw new RuntimeException(e);
-        }
+    public static final
+            Map<LL1Grammar.NonTerminal, EnumMap<Terminal, Production>>
+            PARSE_TABLE = new EnumMap<>(LL1Grammar.NonTerminal.class);
+
+    static {
+        buildParseTable();
+        Collections.unmodifiableMap(PARSE_TABLE);
     }
 
     @Override
@@ -65,23 +62,23 @@ class TopDownParser implements IParser {
         }
 
         // init stack
-        Stack<Integer> ss = new Stack<>();
-        ss.push(grammar.END);
-        ss.push(grammar.STMT_START);
+        final Stack<ISymbol> ss = new Stack<>();
+        ss.push(Terminal.END);
+        ss.push(LL1Grammar.NonTerminal.STMT_START);
 
-        // init parse tree and symbol S
-        Stack<ParseTree> treeNodes = new Stack<>();
+        // init parse tree and symbol s
+        final Stack<ParseTree> treeNodes = new Stack<>();
         ParseTree tree = null;
         ParseTree node = null;
         treeNodes.push(tree);
-        int S;
+        ISymbol s;
 
         // init next token on input - a
         int i = 0;
         Token a;
 
         // code of symbol that ends current parse tree node (end of production)
-        Stack<Integer> endNodeIndex = new Stack<>();
+        final Stack<Integer> endNodeIndex = new Stack<>();
         endNodeIndex.push(ss.size());
 
         // while stack is not empty
@@ -94,36 +91,36 @@ class TopDownParser implements IParser {
                 node = treeNodes.pop();
                 endNodeIndex.pop();
             }
-            S = ss.pop();
+            s = ss.pop();
 
-            // if end of grammar - end parsing
-            if (S == grammar.END) {
+            // if end of GRAMMAR - end parsing
+            if (s == Terminal.END) {
                 break;
             }
 
-            if (S == grammar.EPSILON) {
+            if (s == Terminal.EPSILON) {
                 continue;
             }
 
-            int inputCode;
+            Terminal inputCode;
             // get next input token
             if (i < tokens.length) {
                 a = tokens[i];
-                // get grammar code of input token
-                inputCode = grammar.getCode(a);
+                // get GRAMMAR symbol of input token
+                inputCode = GRAMMAR.getCode(a);
             } else {
                 a = null;
-                inputCode = grammar.END;
+                inputCode = Terminal.END;
             }
 
             // get current parse tree node
 
-            // if S is terminal
-            if (grammar.isTerminal(S)) {
-                // if S == a - go to next token
-                if (S == inputCode) {
+            // if s is terminal
+            if (s.isTerminal()) {
+                // if s == a - go to next token
+                if (s.equals(inputCode)) {
                     if (node != null) {
-                        node.add(a); // add to parse tree
+                        node.add(s, a); // add to parse tree
                         i++;
                     } else {
                         throw new PythiaException(PythiaError.SYNTAX_ERROR);
@@ -131,18 +128,19 @@ class TopDownParser implements IParser {
                 } else { // syntax error
                     throw new PythiaException(PythiaError.SYNTAX_ERROR);
                 }
-            } else { // get production of S and put it on stack
+            } else { // get production of s and put it on stack
                 try {
-                    Production p = parseTable[S][inputCode];
+                    Production p = PARSE_TABLE.get((LL1Grammar.NonTerminal)s)
+                                              .get(inputCode);
                     if (p != null) {
                         endNodeIndex.push(ss.size());
-                        int[] symbols = p.getSymbols();
+                        ISymbol[] symbols = p.getSymbols();
                         for (int j = symbols.length - 1; j >= 0; --j) {
                             ss.push(symbols[j]);
                         }
 
                         // build tree node
-                        ParseTree newNode = new ParseTree(grammar.getSymbol(S));
+                        ParseTree newNode = new ParseTree(s, null);
 
                         if (tree == null) {
                             tree = newNode;
@@ -154,7 +152,7 @@ class TopDownParser implements IParser {
                     } else { // syntax error
                         throw new PythiaException(PythiaError.SYNTAX_ERROR);
                     }
-                } catch(ArrayIndexOutOfBoundsException e) {
+                } catch (ArrayIndexOutOfBoundsException e) {
                     throw new PythiaException(PythiaError.SYNTAX_ERROR);
                 }
             }
@@ -164,66 +162,75 @@ class TopDownParser implements IParser {
         return tree;
     }
 
-    /**
-     * Create parse table for this LL(1) grammar.
+    /*
+     * Create parse table for this LL(1) GRAMMAR.
      *
-     * @return Parse table T[A, a] = P, where:
-     *         A - non terminal symbol,
-     *         a - token,
-     *         P - production
+     * Parse table T[A, a] = prod, where:
+     *     A - non terminal symbol,
+     *     a - token,
+     *     prod - production
      */
-    final Production[][] buildParseTable() throws PythiaException {
-        int[] productions = grammar.getGrammar();
-        // for each grammar rules P: A -> w
+    private static void buildParseTable() {
+        final ISymbol[] productions = GRAMMAR.getGrammar();
+        // for each GRAMMAR rules prod: A -> w
         for (int i = 0; i < productions.length; ++i) {
-            NonTerminal P = (NonTerminal)grammar.getSymbol(productions[i]);
-            // for each production  p of w
-            Production[] w = P.getProductions();
+            if (productions[i].isTerminal()) {
+                continue;
+            }
+            LL1Grammar.NonTerminal prod = (LL1Grammar.NonTerminal)productions[i];
+            // for each production p of w
+            Production[] w = prod.getProductions();
             for (int j = 0; j < w.length; ++j) {
                 Production p = w[j];
                 // for each a in First(p)
-                Integer[] first = first(p.getSymbols());
+                Terminal[] first = first(p.getSymbols());
                 boolean hasEpsilon = false;
                 for (int k = 0; k < first.length; ++k) {
                     // Table[A, a] = p
-                    parseTable[productions[i]][first[k]] = p;
-                    if (first[k] == grammar.EPSILON) {
+
+                    if (!PARSE_TABLE.containsKey(prod)) {
+                        PARSE_TABLE.put(
+                            prod,
+                            new EnumMap<Terminal, Production>(Terminal.class)
+                        );
+                    }
+
+                    PARSE_TABLE.get(prod).put(first[k], p);
+
+                    if (first[k] == Terminal.EPSILON) {
                         hasEpsilon = true;
                     }
                 }
                 if (hasEpsilon) {
-                    Integer[] follow = follow(productions[i]);
+                    Terminal[] follow = follow(prod);
                     for (int k = 0; k < follow.length; ++k) {
-                        parseTable[productions[i]][follow[k]] = p;
+                        PARSE_TABLE.get(prod).put(follow[k], p);
                     }
-                    parseTable[productions[i]][grammar.END] = p;
+                    PARSE_TABLE.get(prod).put(Terminal.END, p);
                 }
             }
         }
-
-        return parseTable;
     }
 
     /**
      * Gets token list that could start providen production
      *
-     * @param symbol Production symbol list
-     * @return List of token
-     * @throws PythiaException
+     * @param symbol production symbol list
+     * @return list of token
      */
-    Integer[] first(int[] symbol) throws PythiaException {
-        ArrayList<Integer> first = new ArrayList<>();
+    static Terminal[] first(ISymbol[] symbol) {
+        List<Terminal> first = new ArrayList<>();
         if (symbol != null && symbol.length != 0) {
             int j = 0;
-            int s = grammar.EPSILON;
-            while (s == grammar.EPSILON && (j < symbol.length)) {
+            ISymbol s = Terminal.EPSILON;
+            while (s == Terminal.EPSILON && (j < symbol.length)) {
                 s = symbol[j];
                 j++;
 
             }
-            if (!grammar.isTerminal(s)) {
-                NonTerminal t  = (NonTerminal)grammar.getSymbol(s);
-                Production[] p = t.getProductions();
+            if (!s.isTerminal()) {
+                LL1Grammar.NonTerminal t  = (LL1Grammar.NonTerminal)s;
+                final Production[] p = t.getProductions();
                 for (int i = 0; i < p.length; ++i) {
                     first.addAll(
                         Arrays.asList(
@@ -232,27 +239,27 @@ class TopDownParser implements IParser {
                     );
                 }
             } else {
-                first.add(s);
+                first.add((Terminal)s);
             }
         }
-        return first.toArray(new Integer[0]);
+        return first.toArray(new Terminal[0]);
     }
 
     /**
      * Gets token list that could follow providen non-terminal symbol
      *
-     * @param symbol Production symbol list
-     * @return List of token symbol codes
-     * @throws PythiaException
+     * @param symbol production symbol list
+     * @return list of token symbol codes
      */
-    Integer[] follow(int symbol) throws PythiaException {
-        ArrayList<Integer> follow = new ArrayList<>();
+    static Terminal[] follow(LL1Grammar.NonTerminal symbol) {
+        final List<ISymbol> follow = new ArrayList<>();
 
-        Integer[] contains = grammar.getSymbolsWith(symbol);
+        final ISymbol[] contains = GRAMMAR.getSymbolsWith(symbol);
 
         // for each non-terminal symbol containing provided symbol
         for (int i = 0; i < contains.length; ++i) {
-            NonTerminal current = (NonTerminal)grammar.getSymbol(contains[i]);
+            LL1Grammar.NonTerminal current =
+                    (LL1Grammar.NonTerminal)contains[i];
             Production[] productions = current.getProductions();
 
             // for each production of this non-terminal symbol
@@ -262,25 +269,29 @@ class TopDownParser implements IParser {
                 if (productions[j].hasSymbol(symbol)) {
 
                     // get next non-epsilon symbol
-                    int s = productions[j].nextSymbol(symbol);
-                    while ((s != -1) && (s == grammar.EPSILON)) {
+                    ISymbol s = productions[j].nextSymbol(symbol);
+                    while ((s != null) && (s == Terminal.EPSILON)) {
                         s = productions[j].nextSymbol(s);
                     }
                     // if s exists FOLLOW(symbol) includes FIRST(s)
-                    if (s != -1) {
+                    if (s != null) {
                         follow.addAll(
-                            Arrays.asList(first(new int[] {s}))
+                            Arrays.asList(first(new ISymbol[] {s}))
                         );
                     } else {
                         // is s not exists FOLLOW(symbol) includes
                         // FOLLOW(production, that contains symbol)
-                        follow.addAll(Arrays.asList(follow(contains[i])));
+                        follow.addAll(
+                            Arrays.asList(
+                                follow((LL1Grammar.NonTerminal)contains[i])
+                            )
+                        );
                     }
                 }
             }
         }
 
-        return follow.toArray(new Integer[0]);
+        return follow.toArray(new Terminal[0]);
     }
 
 }

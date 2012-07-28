@@ -34,18 +34,22 @@ import com.github.pepewuzzhere.pythia.PythiaException;
  * @version %I%, %G%
  * @since 1.0
  */
-public class ParserFactory {
+final class ParserFactory {
+
+    private ParserFactory() {
+        throw new AssertionError();
+    }
 
     /**
      * Creates parser implementation for providen grammar.
      *
-     * @param grammar Grammar for which parser is created
-     * @return Parser implementation
-     * @throws PythiaException
+     * @param grammar grammar for which parser is created
+     * @return parser implementation
+     * @throws PythiaException if parser for grammar doesn't exists
      */
-    public static IParser factory(IGrammar grammar) throws PythiaException {
+    static IParser factory(IGrammar grammar) throws PythiaException {
         if (grammar instanceof LL1Grammar) {
-            return new TopDownParser((LL1Grammar)grammar);
+            return new TopDownParser();
         }
         throw new PythiaException(PythiaError.PARSER_NOT_FOUND);
     }

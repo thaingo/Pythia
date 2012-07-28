@@ -38,22 +38,23 @@ public interface ITokenIterator {
     /**
      * Get next token from source string.
      *
-     * @return Next found {@link Token} or null.
-     * @throws PythiaException
+     * @return next found {@link Token} or null.
+     * @throws PythiaException if there is problem with creating token from
+     *                         source stream
      */
     Token next() throws PythiaException;
 
     /**
      * Checks if source has next token.
      *
-     * @return True if source has next token or false if doesn't.
+     * @return true if source has next token or false if doesn't.
      */
     boolean hasNext();
 
     /**
      * Sets intput string.
      *
-     * @param src Input string
+     * @param src input string
      */
-    void setSource(String src);
+    void setSource(final String src);
 }
