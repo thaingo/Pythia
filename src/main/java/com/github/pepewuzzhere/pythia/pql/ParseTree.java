@@ -48,8 +48,12 @@ public class ParseTree {
      *
      * @param symbol symbol of token
      * @param token token attached to tree node
+     * @throws IllegalArgumentException if symbol is null
      */
     public ParseTree(final ISymbol symbol, final Token token) {
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol is required");
+        }
         childrens = new ArrayList<>();
         this.symbol = symbol;
         this.token = token;

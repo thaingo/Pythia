@@ -308,6 +308,9 @@ class TableDrivenTokenIterator implements ITokenIterator {
      * @return true if it is keyword, false otherwise
      */
     private boolean isKeyword(String readed) {
+        if (readed == null || readed.length() == 0)  {
+            return false;
+        }
         for (int i = 0; i < KEYWORDS.length; ++i) {
             if (KEYWORDS[i].equalsIgnoreCase(readed)) {
                 return true;

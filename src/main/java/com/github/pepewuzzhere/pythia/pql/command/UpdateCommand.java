@@ -85,8 +85,12 @@ public class UpdateCommand implements IDBCommand {
         this.columnFamily = columnFamily;
         this.keySpace     = keySpace;
         this.rowKey       = rowKey;
-        this.keys         = keys;
-        this.values       = values;
+
+        this.keys = new ByteBuffer[keys.length];
+        this.values = new ByteBuffer[values.length];
+
+        System.arraycopy(keys, 0, this.keys, 0, keys.length);
+        System.arraycopy(values, 0, this.values, 0, values.length);
     }
 
     /**
@@ -140,7 +144,7 @@ public class UpdateCommand implements IDBCommand {
         }
         return null;
     }
-    
+
     // test only
     public String getKeySpace() {
         return keySpace;

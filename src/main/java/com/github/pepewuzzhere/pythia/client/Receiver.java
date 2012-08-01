@@ -47,8 +47,12 @@ class Receiver extends Thread {
      * @param socket socket connected to server.
      * @throws IOException if something is wrong with {@link InputStreamReader}
      *                     creation from socket inut stream
+     * @throws IllegalArgumentException if socket is null
      */
     Receiver(final Socket socket) throws IOException {
+        if (socket == null) {
+            throw new IllegalArgumentException();
+        }
         this.socket = socket;
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         setDaemon(true);

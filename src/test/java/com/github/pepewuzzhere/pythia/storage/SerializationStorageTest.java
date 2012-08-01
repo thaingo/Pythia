@@ -96,7 +96,9 @@ public class SerializationStorageTest {
         db.mkdirs();
 
         IColumnFamily columnFamily = model.createColumnFamily();
-        columnFamily.addRow(model.createRow(ByteBuffer.wrap("pepe".getBytes())));
+        columnFamily.addRow(
+            model.createRow(ByteBuffer.wrap("pepe".getBytes()))
+        );
         try (ObjectOutputStream out =
                 new ObjectOutputStream(
                     new FileOutputStream(
@@ -109,7 +111,9 @@ public class SerializationStorageTest {
         }
 
         IColumnFamily columnFamily2 = model.createColumnFamily();
-        columnFamily2.addRow(model.createRow(ByteBuffer.wrap("hello".getBytes())));
+        columnFamily2.addRow(
+            model.createRow(ByteBuffer.wrap("hello".getBytes()))
+        );
         try (ObjectOutputStream out =
                 new ObjectOutputStream(
                     new FileOutputStream(

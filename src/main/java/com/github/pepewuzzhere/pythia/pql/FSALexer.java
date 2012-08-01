@@ -37,10 +37,16 @@ import java.util.List;
  */
 public class FSALexer implements ILexer {
 
-    @Override
-    public Token[] tokenize(final String source, final ITokenIterator it)
-            throws PythiaException
+    /**
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if token iterator is null
+     */
+    @Override public Token[] tokenize(
+            final String source, final ITokenIterator it) throws PythiaException
     {
+        if (it == null) {
+            throw new IllegalArgumentException("Token iterator is required");
+        }
         final List<Token> tokens = new ArrayList<>();
         it.setSource(source);
 

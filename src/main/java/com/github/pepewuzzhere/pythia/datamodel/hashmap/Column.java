@@ -47,9 +47,16 @@ class Column implements IColumn, Serializable {
      * value is optional.
      *
      * @param key key of this column
+     * @throws IllegalArgumentException if key is empty or null
      */
     public Column(final ByteBuffer key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key is required");
+        }
         this.key = key.array();
+        if (this.key.length == 0) {
+            throw new IllegalArgumentException("Key must not be empty");
+        }
     }
 
     @Override

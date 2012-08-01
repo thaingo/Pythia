@@ -47,8 +47,12 @@ public class Client {
      *
      * @param socket socket instance - connection to server
      * @throws IOException if something is wrong with {@link PrintStream}
+     * @throws IllegalArgumentException if socket is null
      */
     public Client(final Socket socket) throws IOException {
+        if (socket == null) {
+            throw new IllegalArgumentException("Socket is required");
+        }
         out = new PrintStream(socket.getOutputStream());
 
         this.receiver = new Receiver(socket);
@@ -59,9 +63,6 @@ public class Client {
      */
     public void startReceiving() {
         receiver.start();
-
-        // for testing purposes - force one run method invocation
-        receiver.run();
     }
 
     /**

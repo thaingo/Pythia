@@ -71,7 +71,10 @@ public class SerializationStorage implements IStorage {
 
                                 );
                             } catch (ClassNotFoundException ex) {
-                                throw new PythiaException(ex.getMessage());
+                                PythiaException e =
+                                        new PythiaException(ex.getMessage());
+                                e.initCause(ex);
+                                throw e;
                             }
                         }
                     }
@@ -156,7 +159,7 @@ public class SerializationStorage implements IStorage {
             }
         }
 
-        if (!path.delete()) {
+        if (!path.delete() && path.exists()) {
             throw new IOException("Could not delete " + path);
         }
     }

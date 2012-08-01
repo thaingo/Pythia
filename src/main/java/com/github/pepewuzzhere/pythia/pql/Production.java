@@ -41,8 +41,12 @@ class Production {
      * Creates production - list of symbols codes to produce nonterminal symbol.
      *
      * @param symbols list of symbol that describe production
+     * @throws IllegalArgumentException if symbol list is empty
      */
     Production(final ISymbol... symbols) {
+        if (symbols == null || symbols.length == 0) {
+            throw new IllegalArgumentException("Symbols are required");
+        }
         this.symbols = symbols;
     }
 
@@ -64,6 +68,9 @@ class Production {
      * @return true if production contains this symbol, false otherwise.
      */
     boolean hasSymbol(final ISymbol symbol) {
+        if (symbol == null) {
+            return false;
+        }
         for (int i = 0; i < symbols.length; ++i) {
             if (symbols[i] == symbol) {
                 return true;
@@ -79,6 +86,9 @@ class Production {
      * @return symbol next to provided or null
      */
     ISymbol nextSymbol(final ISymbol symbol) {
+        if (symbol == null) {
+            return null;
+        }
         for (int i = 0; i < symbols.length; ++i) {
             if (symbols[i] == symbol) {
                 if ((i + 1) < symbols.length) {

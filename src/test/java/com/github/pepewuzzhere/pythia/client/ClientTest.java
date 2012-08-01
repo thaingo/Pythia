@@ -72,12 +72,13 @@ public class ClientTest {
         when(socket.isClosed()).thenReturn(Boolean.TRUE);
 
         Client client = new Client(socket);
+        Receiver receiver = new Receiver(socket);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         System.setOut(new PrintStream(output));
 
         client.send("KEYSPACE test");
-        client.startReceiving();
+        receiver.run();
 
         assertEquals(
             "KEYSPACE test" + System.getProperty("line.separator"),

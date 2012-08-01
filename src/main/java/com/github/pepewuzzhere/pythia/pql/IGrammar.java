@@ -55,6 +55,9 @@ public abstract class IGrammar {
      * @return Code of symbol or -1
      */
     Terminal getCode(Token symbol) {
+        if (symbol == null) {
+            return null;
+        }
         for (Terminal t : Terminal.values()) {
             if (t.grammarEquals(symbol)) {
                 return t;

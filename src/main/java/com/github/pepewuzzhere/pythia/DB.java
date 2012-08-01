@@ -54,10 +54,14 @@ public enum DB {
      *
      * @param keySpace keyspace to add
      * @throws PythiaException if keyspace already exists
+     * @throws IllegalArgumentException if keyspace object is null
      */
     public void addKeySpace(final IKeySpace keySpace)
             throws PythiaException
     {
+        if (keySpace == null) {
+            throw new IllegalArgumentException("KeySpace object is required");
+        }
         if (keySpaces.containsKey(keySpace.getName())) {
             throw new PythiaException(PythiaError.KEY_ALREADY_EXISTS);
         } else {

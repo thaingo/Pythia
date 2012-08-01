@@ -58,7 +58,7 @@ class TopDownParser implements IParser {
     public ParseTree parse(Token[] tokens) throws PythiaException {
         // check arguments
         if (tokens == null || tokens.length == 0) {
-            throw new PythiaException(PythiaError.INVALID_ARGUMENS);
+            throw new IllegalArgumentException("Tokens are required");
         }
 
         // init stack
@@ -152,8 +152,11 @@ class TopDownParser implements IParser {
                     } else { // syntax error
                         throw new PythiaException(PythiaError.SYNTAX_ERROR);
                     }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    throw new PythiaException(PythiaError.SYNTAX_ERROR);
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    PythiaException e =
+                            new PythiaException(PythiaError.SYNTAX_ERROR);
+                    e.initCause(ex);
+                    throw e;
                 }
             }
 

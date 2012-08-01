@@ -29,11 +29,16 @@ import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumn;
 import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.IRow;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Adaptation of {@link com.github.pepewuzzhere.pythia.datamodel.IColumnFamily}
@@ -47,19 +52,58 @@ class ColumnFamily implements IColumnFamily, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Map<ByteArrayWrapper, IRow> rows = new HashMap<>();
-    private boolean isDirty;
+    private transient Map<ByteArrayWrapper, IRow> rows;
+    private transient boolean isDirty;
 
     /**
      * Creates new column family and sets this as dirty - should be saved to
      * disc.
      */
-    public ColumnFamily() {
+    ColumnFamily() {
         isDirty = true;
+        rows = new ConcurrentHashMap<>();
     }
 
-    @Override
-    public void addRow(final IRow row) throws PythiaException {
+    /**
+     * Serializes this ColumnFamily instance.
+     *
+     * @serialData The size of the list ({@code int}), followed by sequence
+     *             of rows {@link Row}
+     */
+    private void writeObject(ObjectOutputStream s) throws IOException {
+        s.defaultWriteObject();
+        s.writeInt(rows.size());
+        for (Map.Entry<ByteArrayWrapper, IRow> r : rows.entrySet()) {
+            s.writeObject(r.getValue());
+        }
+    }
+
+    private void readObject(ObjectInputStream s)
+        throws IOException, ClassNotFoundException
+    {
+        s.defaultReadObject();
+        int size = s.readInt();
+
+        rows = new ConcurrentHashMap<>();
+        for (int i = 0; i < size; i++) {
+            final IRow row = (IRow)s.readObject();
+            if (rows.containsKey(toKey(row.getKey()))) {
+                throw new InvalidObjectException("Duplicate key of row");
+            } else {
+                rows.put(toKey(row.getKey()), row);
+            }
+        }
+        setClean();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if row is null
+     */
+    @Override public void addRow(final IRow row) throws PythiaException {
+        if (row == null) {
+            throw new IllegalArgumentException("Row is required");
+        }
         if (rows.containsKey(toKey(row.getKey()))) {
             throw new PythiaException(PythiaError.KEY_ALREADY_EXISTS);
         } else {
@@ -73,11 +117,19 @@ class ColumnFamily implements IColumnFamily, Serializable {
         return rows.get(toKey(key));
     }
 
-    @Override
-    public void updateRow(
+    /**
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if key or column key is empty
+     */
+    @Override public void updateRow(
         final ByteBuffer key, final ByteBuffer columnKey,
         final ByteBuffer columnValue
     ) throws PythiaException {
+        if (key == null || key.array().length == 0
+           || columnKey == null || columnKey.array().length == 0
+        ) {
+            throw new IllegalArgumentException("Key is required");
+        }
         if (rows.containsKey(toKey(key))) {
             final IColumn col = rows.get(toKey(key)).getColumn(columnKey);
             if (col != null) {

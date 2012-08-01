@@ -47,7 +47,7 @@ final class ParserFactory {
      * @return parser implementation
      * @throws PythiaException if parser for grammar doesn't exists
      */
-    static IParser factory(IGrammar grammar) throws PythiaException {
+    static IParser factory(final IGrammar grammar) throws PythiaException {
         if (grammar instanceof LL1Grammar) {
             return new TopDownParser();
         }

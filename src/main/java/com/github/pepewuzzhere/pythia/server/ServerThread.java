@@ -31,7 +31,6 @@ import com.github.pepewuzzhere.pythia.pql.Compiler;
 import com.github.pepewuzzhere.pythia.pql.FSALexer;
 import com.github.pepewuzzhere.pythia.pql.LL1Grammar;
 import com.github.pepewuzzhere.pythia.pql.command.IDBCommand;
-import com.github.pepewuzzhere.pythia.storage.IStorage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,7 +51,6 @@ class ServerThread implements Runnable {
     private final PrintStream out;
     private final Context ctx;
     private final IDataModel model;
-    private final IStorage storage;
 
     /**
      * Creates server thread.
@@ -61,29 +59,34 @@ class ServerThread implements Runnable {
      *
      * @param socket socket instance
      * @param model data model to use
-     * @param storage storage used in this instance of pythia
      * @throws IOException if something is wrong with i/o
+     * @throws IllegalArgumentException if socket or, model are null
      */
-    public ServerThread(
-        final Socket socket, final IDataModel model, final IStorage storage
-    ) throws IOException {
+    ServerThread(final Socket socket, final IDataModel model)
+            throws IOException
+    {
+        if (socket == null || model == null) {
+            throw new IllegalArgumentException(
+                    "Socket and data model are required");
+        }
         this.socket = socket;
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintStream(socket.getOutputStream());
         ctx = new Context();
         this.model = model;
-        this.storage = storage;
     }
 
     @Override
     public void run() {
         try {
-            String command;
+            String command = "";
             final Compiler compiler =
                     new Compiler(new FSALexer(), new LL1Grammar());
-            do {
+
+            while (command != null && !socket.isClosed()) {
+                command = in.readLine();
                 try {
-                    command = in.readLine();
+
                     System.out.println("Command: " + command);
                     if (command != null) {
                         final IDBCommand cmd = compiler.compile(command, ctx);
@@ -91,16 +94,25 @@ class ServerThread implements Runnable {
                         if (response != null) {
                             out.println(response.toString());
                         }
-                        storage.write(Server.ROOT);
+
                         out.println("OK");
                     }
                 } catch (PythiaException e) {
                     out.println(e.getMessage());
                 }
+
                 out.flush();
-            } while (!socket.isClosed());
+            }
         } catch (IOException | PythiaException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                in.close();
+                out.close();
+                socket.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }

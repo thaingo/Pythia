@@ -45,10 +45,14 @@ public class Context {
      * @param name name of actual keyspace
      * @return Object that represents actual keyspace.
      * @throws PythiaException if keyspace doesn't exists
+     * @throws IllegalArgumentException if name is null or empty
      */
     public IKeySpace setActualKeySpace(final String name)
             throws PythiaException
     {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("Keyspace name is required");
+        }
         final IKeySpace keySpace;
         keySpace = DB.INSTANCE.getKeySpace(name);
         if (keySpace != null) {

@@ -25,7 +25,6 @@ package com.github.pepewuzzhere.pythia.server;
 
 import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
-import com.github.pepewuzzhere.pythia.storage.SerializationStorage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
@@ -73,10 +72,9 @@ public class ServerThreadTest {
 
         when(socket.getOutputStream()).thenReturn(out);
         when(socket.getInputStream()).thenReturn(in);
-        when(socket.isClosed()).thenReturn(Boolean.TRUE);
+        when(socket.isClosed()).thenReturn(Boolean.FALSE);
 
-        ServerThread thread = new ServerThread(
-                socket, new HashMapDataModel(), new SerializationStorage());
+        ServerThread thread = new ServerThread(socket, new HashMapDataModel());
 
         thread.run();
 

@@ -30,6 +30,7 @@ import com.github.pepewuzzhere.pythia.datamodel.IColumnFamily;
 import com.github.pepewuzzhere.pythia.datamodel.IKeySpace;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Adaptation of {@link com.github.pepewuzzhere.pythia.datamodel.IKeySpace}
@@ -42,24 +43,39 @@ import java.util.Map;
 class KeySpace implements IKeySpace {
 
     private final String name;
-    private final Map<String, IColumnFamily> columns = new HashMap<>();
+    private final Map<String, IColumnFamily> columns;
 
     private boolean isDirty;
 
     /**
      * Sets name for keyspace.
      *
-     * @param name name of keyspace.
+     * @param name name of keyspace
+     * @throws IllegalArgumentException if keyspace name is empty
      */
-    public KeySpace(final String name) {
+    KeySpace(final String name) {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("Keyspace name is required");
+        }
         this.name = name;
         isDirty = true;
+        columns = new ConcurrentHashMap<>();
     }
 
-    @Override
-    public void addColumnFamily(
+    /**
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if name is empty or ColumnFamily is null
+     */
+    @Override public void addColumnFamily(
         final String name, final IColumnFamily columnFamily
     ) throws PythiaException {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("ColumnFamily name is required");
+        }
+        if (columnFamily == null) {
+            throw new IllegalArgumentException(
+                    "ColumnFamily object is required");
+        }
         if (columns.containsKey(name)) {
             throw new PythiaException(PythiaError.KEY_ALREADY_EXISTS);
         } else {

@@ -40,9 +40,13 @@ public class Token {
     /**
      * Construct token containing only symbol.
      *
-     * @param symbol tokenType of token
+     * @param symbol token type of token
+     * @throws IllegalArgumentException if token type is null
      */
     public Token(final TokenType symbol) {
+        if (symbol == null) {
+            throw new IllegalArgumentException("Token type is required");
+        }
         this.symbol = symbol;
         this.value  = null;
     }
@@ -52,8 +56,12 @@ public class Token {
      *
      * @param symbol type of token
      * @param value value of token
+     * @throws IllegalArgumentException if token type is null
      */
     public Token(final TokenType symbol, final String value) {
+        if (symbol == null) {
+            throw new IllegalArgumentException("Token type is required");
+        }
         this.symbol = symbol;
         this.value  = value;
     }

@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Server of Pythia DataBase.
@@ -46,7 +48,7 @@ public class Server {
     /**
      * Count of maximum connections to server.
      */
-    public static final int MAX_CONNECTIONS = 2;
+    public static final int MAX_CONNECTIONS = 100;
 
     /**
      * Root of pythia data storage
@@ -58,6 +60,20 @@ public class Server {
     private final ExecutorService service;
     private final IDataModel model;
     private final IStorage storage;
+    private final ScheduledExecutorService scheduler;
+
+    private class Scheduler implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                Server.this.storage.write(Server.ROOT);
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }
+
+    }
 
     /**
      * Create server listening to chosen port.
@@ -65,10 +81,16 @@ public class Server {
      * @param socket server socket
      * @param model pythia data model implementation
      * @param storage storage used in this instance of pythia
+     * @throws IllegalArgumentException if socket, model or storage are null
      */
     public Server(ServerSocket socket, IDataModel model, IStorage storage) {
+        if (socket == null || model == null || storage == null) {
+            throw new IllegalArgumentException(
+                    "Socket, data model and storage are required");
+        }
         server = socket;
         service = Executors.newFixedThreadPool(Server.MAX_CONNECTIONS);
+        scheduler = Executors.newScheduledThreadPool(1);
         this.model = model;
         this.storage = storage;
     }
@@ -82,16 +104,15 @@ public class Server {
      */
     public void go() throws IOException, PythiaException {
         storage.read(ROOT, model);
+        scheduler.scheduleWithFixedDelay(
+                new Scheduler(), 0, 30, TimeUnit.SECONDS);
         try {
             do {
-                service.execute(
-                    new ServerThread(
-                        server.accept(), model, storage
-                    )
-                );
+                service.execute(new ServerThread(server.accept(), model));
             } while (!server.isClosed());
         } catch (Exception e) {
             service.shutdownNow();
+            scheduler.shutdown();
             throw new RuntimeException(e);
         }
     }
@@ -103,6 +124,7 @@ public class Server {
      * @throws Exception if something is wrong with server
      */
     public static void main(String[] args) throws Exception {
+        System.out.println("Pythia - Start");
         final Server pythia = new Server(
             new ServerSocket(4444),
             new HashMapDataModel(),

@@ -23,6 +23,7 @@
  */
 package com.github.pepewuzzhere.pythia.server;
 
+import com.github.pepewuzzhere.pythia.DB;
 import com.github.pepewuzzhere.pythia.datamodel.hashmap.HashMapDataModel;
 import com.github.pepewuzzhere.pythia.storage.SerializationStorage;
 import java.io.ByteArrayInputStream;
@@ -52,6 +53,7 @@ public class ServerTest {
 
     @Before
     public void setUp() {
+        DB.INSTANCE.dropDB();
     }
 
     @After

@@ -49,10 +49,15 @@ public class Compiler {
      * @param lexer lexer implementation to use
      * @param grammar grammar of PQL to use
      * @throws PythiaException if parser for pql couldn't be created
+     * @throws IllegalArgumentException if lexer or grammar are null
      */
     public Compiler(final ILexer lexer, final IGrammar grammar)
             throws PythiaException
     {
+        if (lexer == null || grammar == null) {
+            throw new IllegalArgumentException(
+                    "Lexer and grammar are required");
+        }
         this.lexer  = lexer;
         this.grammar = grammar;
         this.parser = ParserFactory.factory(grammar);

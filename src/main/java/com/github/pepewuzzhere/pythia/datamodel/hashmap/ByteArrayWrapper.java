@@ -47,8 +47,13 @@ final class ByteArrayWrapper implements Serializable {
      * Creates byte array wrapper.
      *
      * @param data Byte array data to wrap.
+     * @throws IllegalArgumentException if byte array is empty or null
      */
-    public ByteArrayWrapper(final byte[] data) {
+    ByteArrayWrapper(final byte[] data) {
+        if (data == null || data.length == 0) {
+            throw new IllegalArgumentException(
+                    "Byte array is required and must be not empty");
+        }
         this.data = Arrays.copyOf(data, data.length);
     }
 

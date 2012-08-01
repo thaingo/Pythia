@@ -28,6 +28,9 @@ import com.github.pepewuzzhere.pythia.PythiaError;
 import com.github.pepewuzzhere.pythia.PythiaException;
 import com.github.pepewuzzhere.pythia.datamodel.IColumn;
 import com.github.pepewuzzhere.pythia.datamodel.IRow;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -37,6 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Adaptation of {@link com.github.pepewuzzhere.pythia.datamodel.IRow}
@@ -50,20 +54,72 @@ class Row implements IRow, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final byte[] key;
-    private final Map<ByteArrayWrapper, IColumn> columns = new HashMap<>();
+    private transient byte[] key;
+    private transient Map<ByteArrayWrapper, IColumn> columns;
 
     /**
      * Sets key of created row.
      *
      * @param key key of this row
+     * @throws IllegalArgumentException if key is null or empty
      */
-    public Row(final ByteBuffer key) {
+    Row(final ByteBuffer key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key is required");
+        }
         this.key = key.array();
+        if (this.key.length == 0) {
+            throw new IllegalArgumentException("Key must not be empty");
+        }
+        columns = new ConcurrentHashMap<>();
     }
 
-    @Override
-    public void addColumn(final IColumn column) {
+     /**
+     * Serializes this Row instance.
+     *
+     * @serialData The size of the list ({@code int}), after that size of key
+     *             ({@code int}) and key byte array, followed by sequence
+     *             of columns {@link Column}
+     */
+    private void writeObject(ObjectOutputStream s) throws IOException {
+        s.defaultWriteObject();
+        s.writeInt(columns.size());
+        s.writeInt(key.length);
+        s.write(key);
+        for (Map.Entry<ByteArrayWrapper, IColumn> c : columns.entrySet()) {
+            s.writeObject(c.getValue());
+        }
+    }
+
+    private void readObject(ObjectInputStream s)
+        throws IOException, ClassNotFoundException
+    {
+        s.defaultReadObject();
+        int size = s.readInt();
+        int keySize = s.readInt();
+        key = new byte[keySize];
+        s.read(key, 0, keySize);
+
+        columns = new ConcurrentHashMap<>();
+        for (int i = 0; i < size; i++) {
+            final IColumn column = (IColumn)s.readObject();
+            if (columns.containsKey(toKey(column.getKey()))) {
+                // update value in exiting column
+                columns.get(toKey(column.getKey())).setValue(column.getValue());
+            } else {
+                columns.put(toKey(column.getKey()), column);
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if column is null
+     */
+    @Override public void addColumn(final IColumn column) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column is required");
+        }
         if (columns.containsKey(toKey(column.getKey()))) {
             // update value in exiting column
             columns.get(toKey(column.getKey())).setValue(column.getValue());
@@ -77,10 +133,16 @@ class Row implements IRow, Serializable {
         return columns.get(toKey(key));
     }
 
-    @Override
-    public void updateColumn(final ByteBuffer key, final ByteBuffer value)
-            throws PythiaException
+    /**
+     * {@inheritDoc}
+     * @throws IllegalArgumentException if key is empty
+     */
+    @Override public void updateColumn(
+            final ByteBuffer key, final ByteBuffer value) throws PythiaException
     {
+        if (key == null || key.array().length == 0) {
+            throw new IllegalArgumentException("Key is required");
+        }
         if (columns.containsKey(toKey(key))) {
             columns.get(toKey(key)).setValue(value);
         } else {
